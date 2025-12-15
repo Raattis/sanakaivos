@@ -89,14 +89,31 @@
         }
         .button {
             padding: 10px 15px;
-            background-color: #007bff;
+            background-color: #4b4b4b;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 15px;
             cursor: pointer;
             transition: background-color 0.3s;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+        }
+        .button.vihje {
+            border-radius: 20px;
+            margin-right: 10px;
+            margin-right: 10px;
+            padding-left: 0px;
+            padding-right: 0px;
+            width: 40px;
+        }
+        .button.yhdista {
+            background-color: #007bff;
         }
         .button:hover {
+            background-color: #363636;
+        }
+        .button.yhdista:hover {
             background-color: #0056b3;
         }
         #buttons {
@@ -105,24 +122,38 @@
             gap: 10px;
         }
 
-        .line.selected {
+        /* start -> end */
+        @keyframes bgFade {
+          from { background-color: transparent; }
+          to   { background-color: #5c5cb8; }
+        }
+        @keyframes bgUsed {
+          from { background-color: 5c5cb8; }
+          to   { background-color: #363636; }
+        }
+        .line {
             position: absolute;
             background-color: #5c5cb8;
+            transition: background-color 0.2s;
             width: 2px;
             height: 20px;
         }
+        .line.selected {
+            background-color: #5c5cb8;
+            animation: bgFade 0.2s ease forwards;
+        }
         .line.used {
-            position: absolute;
-            background-color: #5c5c5c;
-            width: 2px;
-            height: 20px;
+            background-color: #363636;
+            animation: bgUsed 0.2s ease forwards;
         }
     </style>
 </head>
 <body>
     <h1>Sanakaivos</h1>
     <div id="sana">tästä se lähtee</div>
-    <div id="board"></div>
+    <div id="board-container">
+        <div id="board"></div>
+    </div>
     <div id="buttons"></div>
     <div id="virhe"></div>
     <div id="loydetyt_sanat"></div>
@@ -183,6 +214,62 @@
             allCells.push(cell);
         });
 
+        const connectors = [];
+
+        function disconnect(cell1, cell2) {
+                if (!cell1 || !cell2) return;
+
+                const rect1 = cell1.dataset.index < cell2.dataset.index ? cell1 : cell2;
+                const rect2 = cell1.dataset.index < cell2.dataset.index ? cell2 : cell1;
+                const key = rect1.dataset.index + "-" + rect2.dataset.index;
+                console.log(`disconnect(${cell1.dataset.index}, ${cell2.dataset.index}) -> ${key} & ${rect1.dataset.index}`);
+                const line = connectors.find(l => l.dataset.key === key);
+                console.log(rect1, line, connectors);
+                if (line) {
+                    let index = connectors.indexOf(line);
+                    console.log(line, index, connectors);
+                    connectors.splice(index, 1);
+                    line.remove();
+                }
+        };
+
+        function connect(cell1, cell2, style) {
+                disconnect(cell1, cell2);
+                const line = document.createElement('div');
+                document.getElementById('board-container').appendChild(line);
+                line.classList.add('line');
+                line.classList.add(style);
+                const rect1 = cell1.dataset.index < cell2.dataset.index ? cell1 : cell2;
+                const rect2 = cell1.dataset.index < cell2.dataset.index ? cell2 : cell1;
+                const key = rect1.dataset.index + "-" + rect2.dataset.index;
+                line.dataset.key = key;
+
+                const x1 = rect1.offsetLeft + rect1.offsetWidth * 0.5;
+                const y1 = rect1.offsetTop + rect1.offsetHeight * 0.5;
+                const x2 = rect2.offsetLeft + rect2.offsetWidth * 0.5;
+                const y2 = rect2.offsetTop + rect2.offsetHeight * 0.5;
+                const diagonality = (x1 != x2 && y1 != y2) ? Math.pow(2, 0.5) : 1.0;
+                const w = 45 * diagonality;
+                const h = 15;
+                const ox = x1 == x2 ? 0 : x1 < x2 ? 0 : -0;
+                const oy = y1 == y2 ? 0 : y1 < y2 ? 0 : -0;
+                const cx = (x1 + x2) * 0.5;
+                const cy = (y1 + y2) * 0.5;
+                const angle = Math.atan2(y2 - y1, x2 - x1);
+                line.style.position = 'absolute';
+                line.style.top = `${cy + oy - h*0.5}px`;
+                line.style.left = `${cx + ox - w*0.5}px`;
+                line.style.transform = `rotate(${angle}rad)`;
+                line.style.width = `${w}px`;
+                line.style.height = `${h}px`;
+                line.style.zIndex = -1;
+                //console.log(rect, line, x1, x2, y1, y2, angle);
+                console.log(rect1, rect2, line)
+                connectors.push(line);
+                return line;
+        };
+
+
         function makeButton(text, callback) {
             const button = document.createElement('div');
             button.textContent = text;
@@ -195,6 +282,11 @@
 
         function removeWord(word) {
             word.forEach((cell) => { cell.classList.remove('used'); });
+            for (i in word)
+            {
+                if (+i + 1 < word.length)
+                    disconnect(word[i], word[+i + 1]);
+            }
             const index = foundWords.indexOf(word);
             foundWords.splice(index, 1);
             for (i in wordListing) {
@@ -204,11 +296,17 @@
             }
         }
 
-        makeButton('tyhjennä', () => {
+        makeButton('luovuta', () => {
             while (foundWords.length > 0)
                 removeWord(foundWords[foundWords.length - 1]);
             clearSelected();
-        });
+        }).classList.add("luovuta");
+
+        makeButton('vihje', () => {
+            while (foundWords.length > 0)
+                removeWord(foundWords[foundWords.length - 1]);
+            clearSelected();
+        }).classList.add("vihje");
 
         makeButton('yhdistä', () => {
             if (!isAcceptableWord(selectedCells))
@@ -225,6 +323,11 @@
             foundWords.push(newWord);
             clearSelected();
 
+            for (i in newWord) {
+                if (+i + 1 < newWord.length)
+                    connect(newWord[i], newWord[+i + 1], "used");
+            }
+
             const wlist = document.createElement('div');
             wordListing.push(wlist);
             wlist.textContent = "";
@@ -233,12 +336,20 @@
             for (i in newWord)
                 wlist.textContent += newWord[i].dataset.letter;
             document.getElementById('loydetyt_sanat').appendChild(wlist);
-        });
+        }).classList.add("yhdista");
 
         function clearSelected() {
             selectedCells.forEach((cell) => {
+                console.log(`clearing: ${cell.dataset.index}`);
                 cell.classList.remove('selected');
             });
+            console.log(selectedCells.length, selectedCells);
+            for (i in selectedCells)
+            {
+                console.log(i, selectedCells);
+                if (+i + 1 < selectedCells.length)
+                    disconnect(selectedCells[i], selectedCells[+i + 1]);
+            }
             selectedCells.length = 0;
         }
 
@@ -271,7 +382,9 @@
             }
 
             cell.classList.remove('selected');
-            selectedCells.splice(index, 1);
+            const cell = selectedCells.splice(index, 1);
+            if (index > 0)
+                disconnect(selectedCells[index - 1], cell);
         }
 
         function toggleSelection(cell) {
@@ -280,6 +393,11 @@
                 if (selectedCells.length == 1) { clearSelected(); }
                 else { popSelection(); }
             } else {
+                if (selectedCells.length > 0)
+                {
+                    console.log(selectedCells, cell);
+                    connect(selectedCells[selectedCells.length - 1], cell, "selected");
+                }
                 selectedCells.push(cell);
                 cell.classList.toggle('selected');
             }
