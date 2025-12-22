@@ -171,23 +171,7 @@
 	</div>
 
 	<script>
-		const letters = [ // TODO: Get from URL
-			'E', 'O', 'O', 'R', 'T',
-			'L', 'M', 'S', 'I', 'T',
-			'T', 'E', 'T', 'E', 'A',
-			'I', 'T', 'R', 'A', 'G',
-			'I', 'P', 'M', 'E', 'N',
-			'R', 'I', 'A', 'K', 'A'
-		];
-		const intendedWords = [
-			[ 1,  6,  0,  5, 11, 10, 16, 15],
-			[21, 25, 20, 26, 22, 27],
-			[28, 29, 24, 19, 23, 17, 12, 18, 14],
-			[ 3,  2,  7, 13,  9,  4,  8],
-		];
-
-		const encryptionKey = "jy2d7ukxpX1Dz04YgFaK8ChHwOW9qlr"
-
+		const encryptionKey = "jy2d7ukxpX1Dz04YgFaK8ChHwOW9qlr";
 		function encodeLevelCode(letters, intendedWords) {
 			function encode(c) {
 				c = +c;
@@ -214,11 +198,33 @@
 			return levelCode;
 		}
 
-		const savedLevelCode = "ykjuD1gYrCO8Wh9rqlwKHFza4rd2x0X7p744FKDzapKK7K7jpKFjkpYz70Fpj1j";
-		const generatedLevelCode = encodeLevelCode(letters, intendedWords);
-		if (generatedLevelCode !== savedLevelCode) {
-			console.log("ERROR: Saved and calculated level codes don't match. New=" + generatedLevelCode);
+		const generatedLevelCode = encodeLevelCode([
+			'E', 'O', 'O', 'R', 'T',
+			'L', 'M', 'S', 'I', 'T',
+			'T', 'E', 'T', 'E', 'A',
+			'I', 'T', 'R', 'A', 'G',
+			'I', 'P', 'M', 'E', 'N',
+			'R', 'I', 'A', 'K', 'A'
+		], [
+			[ 1,  6,  0,  5, 11, 10, 16, 15],
+			[21, 25, 20, 26, 22, 27],
+			[28, 29, 24, 19, 23, 17, 12, 18, 14],
+			[ 3,  2,  7, 13,  9,  4,  8],
+		]);
+
+
+		let givenLevelCode = "ykjuD1gYrCO8Wh9rqlwKHFza4rd2x0X7p744FKDzapKK7K7jpKFjkpYz70Fpj1j";
+		const url = window.location.href.split('?');
+		if (url.length == 2) {
+			givenLevelCode = url[1];
 		}
+
+		if (generatedLevelCode !== givenLevelCode) {
+			console.log("Given and calculated level codes don't match. New=" + generatedLevelCode + ", Given=" + givenLevelCode);
+		}
+
+		const letters = [];
+		const intendedWords = [];
 		function decodeLevelCode(levelCode, letters, intendedWords) {
 			function decode(c) {
 				if (!encryptionKey.includes(c)) {
@@ -249,7 +255,7 @@
 				letters.push(String.fromCharCode(a + c));
 			}
 		}
-		decodeLevelCode(generatedLevelCode, letters, intendedWords);
+		decodeLevelCode(givenLevelCode, letters, intendedWords);
 
 		let intendedLetterCount = 0;
 		intendedWords.forEach(arr => intendedLetterCount += arr.length);
