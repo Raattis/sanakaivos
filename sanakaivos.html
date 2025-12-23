@@ -14,6 +14,10 @@
 			flex-direction: column;
 			align-items: center;
 			padding: 10px;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
 		}
 		h1 {
 			color: #f4f4f4;
@@ -66,7 +70,7 @@
 		.board {
 			display: grid;
 			grid-template-columns: repeat(5, 1fr);
-			gap: 3px;
+			gap: 5px;
 			margin-bottom: 20px;
 		}
 		.cell {
@@ -75,8 +79,8 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			background-color: #5c5c5c;
-			border: 2px solid #555555;
+			background-color: #333333;
+			border: 2px solid #262626;
 			border-radius: 18px;
 			cursor: pointer;
 			transition: background-color 0.3s;
@@ -92,13 +96,13 @@
 			color: #e0e0fc;
 		}
 		.cell.used {
-			background-color: #333333;
-			border-color: #262626;
+			background-color: #5c5c5c;
+			border-color: #555555;
 			color: #bbb;
 		}
 		.cell.intended {
-			background-color: #333333;
-			border-color: #262626;
+			background-color: #5c5c5c;
+			border-color: #555555;
 			color: #bbb;
 		}
 		.cell.intended-first {
@@ -108,6 +112,34 @@
 		}
 		.cell.vihje {
 			border-color: #eee !important;
+		}
+		@keyframes bgFade {
+		  from { background-color: transparent; }
+		  to   { background-color: #44e; }
+		}
+		@keyframes bgUsed {
+		  from { background-color: #44e; }
+		  to   { background-color: #555555; }
+		}
+		.line {
+			position: absolute;
+			width: 2px;
+			height: 10px;
+		}
+		.line.selected {
+			background-color: #5c5cb8;
+			animation: bgFade 0.2s ease forwards;
+			margin-top: 0px;
+		}
+		.line.used {
+			background-color: #555555;
+			animation: bgUsed 0.2s ease forwards;
+		}
+		.line.intended-first {
+			background-color: #44e
+		}
+		.line.intended {
+			background-color: #555555;
 		}
 		.button {
 			padding: 10px 15px;
@@ -138,47 +170,21 @@
 		.button.yhdista:hover {
 			background-color: #0056b3;
 		}
-		#buttons {
+		.button-container {
 			display: flex;
 			justify-content: center;
 			gap: 10px;
 			margin-bottom: 10px;
 		}
-
-		/* start -> end */
-		@keyframes bgFade {
-		  from { background-color: transparent; }
-		  to   { background-color: #5c5cb8; }
+		.disabled {
+			pointer-events: none;
 		}
-		@keyframes bgUsed {
-		  from { background-color: 5c5cb8; }
-		  to   { background-color: #363636; }
-		}
-		.line {
-			position: absolute;
-			background-color: #5c5cb8;
-			transition: background-color 0.2s;
-			width: 2px;
-			height: 20px;
-		}
-		.line.selected {
-			background-color: #5c5cb8;
-			animation: bgFade 0.2s ease forwards;
-			margin-top: 0px;
-		}
-		.line.used {
-			background-color: #363636;
-			animation: bgUsed 0.2s ease forwards;
-			margin-top: 4px;
-		}
-		.line.intended-first {
-			background-color: #5c5cb8
-		}
-		.line.intended {
-			background-color: #363636;
+		.disabled-button {
+			background-color: #333 !important;
+			color: #999 !important;
 		}
 		.hide {
-			display: none;
+			display: none !important;
 		}
 	</style>
 </head>
@@ -192,7 +198,8 @@
 	<div id="board-container">
 		<div id="board" class="board"></div>
 	</div>
-	<div id="buttons"></div>
+	<div id="buttons" class="button-container"></div>
+	<div id="kopioi-tulos" class="button-container hide"><button id="copyToClipboard" class='button'>Kopioi tulos</button></div>
 	<div id="loydetyt_sanat" class="sana_list"></div>
 	<div id="malli-container" class="hide">
 		<div id="malli" class="board"></div>
@@ -390,7 +397,7 @@
 				const y2 = rect2.offsetTop + rect2.offsetHeight * 0.5;
 				const diagonality = (x1 != x2 && y1 != y2) ? Math.pow(2, 0.5) : 1.0;
 				const w = 45 * diagonality;
-				const h = 15;
+				const h = 10;
 				const ox = x1 == x2 ? 0 : x1 < x2 ? 0 : -0;
 				const oy = y1 == y2 ? 0 : y1 < y2 ? 0 : -0;
 				const cx = (x1 + x2) * 0.5;
@@ -411,6 +418,7 @@
 
 		connectors.splice(0, connectors.length);
 
+		const theButtons = [];
 
 		function makeButton(text, callback) {
 			const button = document.createElement('div');
@@ -418,8 +426,31 @@
 			button.classList.add('button');
 
 			button.addEventListener('click', callback);
+			theButtons.push(button);
 			document.getElementById('buttons').appendChild(button);
 			return button;
+		}
+
+		const shareableUrl = window.location.href; // Lol, this is a user string
+		function disableButtons() {
+			document.getElementById('buttons').classList.add('hide');
+			theButtons.forEach(button => button.classList.add('disabled-button'));
+			allCells.forEach(cell => cell.classList.add('disabled'));
+			
+			const copyContainer = document.getElementById('kopioi-tulos');
+			copyContainer.classList.remove('hide');
+			const copyButton = document.getElementById('copyToClipboard');
+			copyButton.addEventListener('click', ()=>{
+				let msg = "";
+				if (youWon)
+					msg += "Pääsin Sanakaivoksen läpi ajassa ";
+				else
+					msg += "Luovutin Sanakaivoksen ajassa ";
+				msg += getResultTime() + "\nKokeile itse osoitteessa\n" + shareableUrl;
+				console.log("Copied to clipboard: " + msg);
+				navigator.clipboard.writeText(msg);
+				copyButton.textContent = "Kopioitu!";
+			});
 		}
 
 		function removeWord(word) {
@@ -437,12 +468,18 @@
 				}
 			}
 		}
-
-		makeButton('luovuta', () => {
+		
+		function gameOver() {
 			clearSelected();
 			if (endTime) return;
-			document.getElementById('tulos').textContent = 'Luovutit ajassa ' + getResultTime();
+			disableButtons();
 			showMalli();
+			getResultTime();
+		}
+
+		makeButton('luovuta', () => {
+			gameOver();
+			document.getElementById('tulos').textContent = 'Luovutit ajassa ' + getResultTime();
 		}).classList.add('luovuta');
 
 		let revealedClues = 0;
@@ -536,9 +573,11 @@
 				return `${seconds} sekuntia`;
 		}
 
+		let youWon = false;
 		function victory() {
+			youWon = true;
+			gameOver();
 			document.getElementById('tulos').textContent = 'Voitit ajassa ' + getResultTime();
-			showMalli();
 		}
 
 		function clearSelected() {
