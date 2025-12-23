@@ -275,7 +275,8 @@
 			intendedWords.push([]);
 			let intendedLetterCount = 0;
 			let i = 0;
-			for (; intendedLetterCount < 30 && i < levelCode.length; ++i) {
+			const mayContainIntendedWords = levelCode.length >= 62 && levelCode.includes(encryptionKey[encryptionKey.length - 1]);
+			for (; intendedLetterCount < 30 && i < levelCode.length && mayContainIntendedWords; ++i) {
 				const c = decode(levelCode[+i]);
 				if (c == encryptionKey.length - 1) {
 					intendedWords.push([]);
@@ -291,7 +292,7 @@
 				intendedLetterCount += 1;
 			}
 			const a = +('A'.charCodeAt(0));
-			for (; i < levelCode.length; ++i) {
+			for (; letters.length < 30 && i < levelCode.length; ++i) {
 				const c = decode(levelCode[+i]);
 				letters.push(String.fromCharCode(a + c));
 			}
