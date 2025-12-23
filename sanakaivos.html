@@ -26,17 +26,16 @@
 			height: 15px;
 			width: 100%;
 		}
-		#sana {
+		.viesti {
 			display: flex;
 			justify-content: center;
 			align:center;
 			width:100%;
+			position:absolute;
+			top:0;
+			left:0;
 		}
 		#virhe {
-			display: flex;
-			justify-content: center;
-			align:center;
-			width:100%;
 			color: red;
 		}
 		.sana_list {
@@ -173,30 +172,32 @@
 			margin-top: 4px;
 		}
 		.line.intended-first {
-			background-color: #5c5cb8;
-			margin-top: 38px; // D:
+			background-color: #5c5cb8
 		}
 		.line.intended {
 			background-color: #363636;
-			margin-top: 38px; // D:
+		}
+		.hide {
+			display: none;
 		}
 	</style>
 </head>
 <body>
 	<h1>Sanakaivos</h1>
 	<div id="sana-container" style="position:relative;height:25px">
-		<div id="sana" style="position:absolute;top:0;left:0;"></div>
-		<div id="virhe" style="position:absolute;top:0;left:0;"></div>
+		<div id="sana" class="viesti"></div>
+		<div id="virhe" class="viesti"></div>
+		<div id="tulos" class="viesti"></div>
 	</div>
 	<div id="board-container">
 		<div id="board" class="board"></div>
 	</div>
 	<div id="buttons"></div>
 	<div id="loydetyt_sanat" class="sana_list"></div>
-	<div id="malli-container">
+	<div id="malli-container" class="hide">
 		<div id="malli" class="board"></div>
 	</div>
-	<div id="loydetyt_malli_sanat" class="sana_list"></div>
+	<div id="loydetyt_malli_sanat" class="sana_list hide"></div>
 
 	<script>
 		const encryptionKey = "jy2d7ukxpX1Dz04YgFaK8ChHwOW9qlr";
@@ -408,29 +409,6 @@
 				return line;
 		};
 
-		function paintIntendedSolution(cells) {
-			let prevI = -1;
-			let first = true;
-			intendedWords.forEach(arr => { prevI = -1;
-				const clss = first ? "intended-first" :"intended";
-				arr.forEach(index =>  {
-					if (prevI != -1) {
-						connectMalli(cells[prevI], cells[index], clss);
-					}
-					prevI = index;
-					cells[index].classList.add(clss);
-				});
-				first = false;
-
-				const wlist = document.createElement('div');
-				wordListing.push(wlist);
-				wlist.textContent = "";
-				wlist.classList.add("loydetty_sana");
-				arr.forEach(index => { wlist.textContent += cells[index].dataset.letter; });
-				document.getElementById('loydetyt_malli_sanat').appendChild(wlist);
-			});
-		}
-		paintIntendedSolution(intendedSoluctionCells);
 		connectors.splice(0, connectors.length);
 
 
@@ -461,10 +439,11 @@
 		}
 
 		makeButton('luovuta', () => {
-			while (foundWords.length > 0)
-				removeWord(foundWords[foundWords.length - 1]);
 			clearSelected();
-		}).classList.add("luovuta");
+			if (endTime) return;
+			document.getElementById('tulos').textContent = 'Luovutit ajassa ' + getResultTime();
+			showMalli();
+		}).classList.add('luovuta');
 
 		let revealedClues = 0;
 		makeButton('vihje', () => {
@@ -473,7 +452,7 @@
 				allCells[vihjeI].classList.add('vihje');
 				revealedClues += 1;
 			}
-		}).classList.add("vihje");
+		}).classList.add('vihje');
 
 		makeButton('yhdistä', () => {
 			if (!isAcceptableWord(selectedCells))
@@ -505,7 +484,62 @@
 				wlist.textContent += newWord[i].dataset.letter;
 			document.getElementById('loydetyt_sanat').appendChild(wlist);
 			updateCurrentWord();
-		}).classList.add("yhdista");
+
+			let foundCount = 0;
+			foundWords.forEach(word => foundCount += word.length);
+			if (foundCount == allCells.length)
+				victory();
+		}).classList.add('yhdista');
+
+		function showMalli() {
+			updateCurrentWord();
+			document.getElementById('malli-container').classList.remove('hide');
+			document.getElementById('loydetyt_malli_sanat').classList.remove('hide');
+			function paintIntendedSolution(cells) {
+				let prevI = -1;
+				let first = true;
+				intendedWords.forEach(arr => { prevI = -1;
+					const clss = first ? "intended-first" :"intended";
+					arr.forEach(index =>  {
+						if (prevI != -1) {
+							connectMalli(cells[prevI], cells[index], clss);
+						}
+						prevI = index;
+						cells[index].classList.add(clss);
+					});
+					first = false;
+
+					const wlist = document.createElement('div');
+					wordListing.push(wlist);
+					wlist.textContent = "";
+					wlist.classList.add("loydetty_sana");
+					arr.forEach(index => { wlist.textContent += cells[index].dataset.letter; });
+					document.getElementById('loydetyt_malli_sanat').appendChild(wlist);
+				});
+			}
+			paintIntendedSolution(intendedSoluctionCells);
+		}
+
+		const startTime = new Date();
+		let endTime = null;
+		function getResultTime() {
+			if (!endTime) endTime = new Date();
+			const duration = +Math.floor((endTime - startTime) / 1000);
+			const hours = Math.floor((duration / 60 / 60));
+			const minutes = Math.floor((duration / 60) % 60);
+			const seconds = Math.floor(duration % 60);
+			if (hours > 0)
+				return `${hours}:${minutes}:${seconds}`;
+			else if (minutes > 0)
+				return `${minutes}:${seconds}`;
+			else
+				return `${seconds} sekuntia`;
+		}
+
+		function victory() {
+			document.getElementById('tulos').textContent = 'Voitit ajassa ' + getResultTime();
+			showMalli();
+		}
 
 		function clearSelected() {
 			selectedCells.forEach((cell) => {
