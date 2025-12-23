@@ -20,30 +20,34 @@
 			text-align: center;
 			margin-bottom: 10px;
 		}
+		#sana-container {
+			gap: 10px;
+			margin-bottom: 5px;
+			height: 15px;
+			width: 100%;
+		}
 		#sana {
 			display: flex;
 			justify-content: center;
-			gap: 10px;
-			margin-bottom: 10px;
-		}
-		#loydetyt_sanat {
-			display: flex;
-			justify-content: left;
-			gap: 10px;
-			margin-bottom: 10px;
+			align:center;
+			width:100%;
 		}
 		#virhe {
 			display: flex;
 			justify-content: center;
-			gap: 10px;
+			align:center;
+			width:100%;
 			color: red;
-			margin-bottom: 10px;
 		}
-		.board {
-			display: grid;
-			grid-template-columns: repeat(5, 1fr);
-			gap: 3px;
-			margin-bottom: 20px;
+		.sana_list {
+			display: flex;
+			justify-content: center;
+			flex-wrap: wrap;
+			row-gap: 2px;
+			column-gap: 4px;
+			margin-bottom: 10px;
+			height: 70px;
+			width: 250px;
 		}
 		.loydetty_sana {
 			height: 28px;
@@ -59,6 +63,12 @@
 			-webkit-user-select: none;
 			-moz-user-select: none;
 			-ms-user-select: none;
+		}
+		.board {
+			display: grid;
+			grid-template-columns: repeat(5, 1fr);
+			gap: 3px;
+			margin-bottom: 20px;
 		}
 		.cell {
 			width: 36px;
@@ -88,9 +98,17 @@
 			color: #bbb;
 		}
 		.cell.intended {
-			background-color: #ff3333;
-			border-color: #ee2626;
+			background-color: #333333;
+			border-color: #262626;
 			color: #bbb;
+		}
+		.cell.intended-first {
+			background-color: #55f;
+			border-color: #44e;
+			color: #bbb;
+		}
+		.cell.vihje {
+			border-color: #eee !important;
 		}
 		.button {
 			padding: 10px 15px;
@@ -125,6 +143,7 @@
 			display: flex;
 			justify-content: center;
 			gap: 10px;
+			margin-bottom: 10px;
 		}
 
 		/* start -> end */
@@ -146,29 +165,38 @@
 		.line.selected {
 			background-color: #5c5cb8;
 			animation: bgFade 0.2s ease forwards;
+			margin-top: 0px;
 		}
 		.line.used {
 			background-color: #363636;
 			animation: bgUsed 0.2s ease forwards;
+			margin-top: 4px;
+		}
+		.line.intended-first {
+			background-color: #5c5cb8;
+			margin-top: 38px; // D:
 		}
 		.line.intended {
-			background-color: #ff3636;
-			animation: bgIntended 0.2s ease forwards;
+			background-color: #363636;
+			margin-top: 38px; // D:
 		}
 	</style>
 </head>
 <body>
 	<h1>Sanakaivos</h1>
-	<div id="sana">tästä se lähtee</div>
+	<div id="sana-container" style="position:relative;height:25px">
+		<div id="sana" style="position:absolute;top:0;left:0;"></div>
+		<div id="virhe" style="position:absolute;top:0;left:0;"></div>
+	</div>
 	<div id="board-container">
 		<div id="board" class="board"></div>
 	</div>
 	<div id="buttons"></div>
-	<div id="virhe"></div>
-	<div id="loydetyt_sanat"></div>
+	<div id="loydetyt_sanat" class="sana_list"></div>
 	<div id="malli-container">
 		<div id="malli" class="board"></div>
 	</div>
+	<div id="loydetyt_malli_sanat" class="sana_list"></div>
 
 	<script>
 		const encryptionKey = "jy2d7ukxpX1Dz04YgFaK8ChHwOW9qlr";
@@ -211,7 +239,6 @@
 			[28, 29, 24, 19, 23, 17, 12, 18, 14],
 			[ 3,  2,  7, 13,  9,  4,  8],
 		]);
-
 
 		let givenLevelCode = "ykjuD1gYrCO8Wh9rqlwKHFza4rd2x0X7p744FKDzapKK7K7jpKFjkpYz70Fpj1j";
 		const url = window.location.href.split('?');
@@ -271,19 +298,22 @@
 		const foundWords = [];
 		const wordListing = [];
 
-		function makeCells(resultCells, parentElement) {
+		function makeCells(resultCells, parentElement, interactive) {
 			letters.forEach((letter, index) => {
 				const cell = document.createElement('div');
 				cell.textContent = letter;
 				cell.classList.add('cell');
 				cell.dataset.index = index;
 				cell.dataset.letter = letter;
+				parentElement.appendChild(cell);
+				resultCells.push(cell);
+				if (!interactive)
+					return;
 
 				cell.addEventListener('click', () => {
 					const selectedIndex = selectedCells.indexOf(cell);
 					if (selectedIndex > -1 && selectedIndex + 1 == selectedCells.length) {
-						cell.classList.remove('selected');
-						selectedCells.length -= 1;
+						toggleSelection(cell);
 						return;
 					}
 					if (selectedIndex > -1) {
@@ -309,12 +339,10 @@
 						toggleSelection(cell);
 					}
 				});
-				parentElement.appendChild(cell);
-				resultCells.push(cell);
 			});
 		}
-		makeCells(allCells, document.getElementById('board'));
-		makeCells(intendedSoluctionCells, document.getElementById('malli'));
+		makeCells(allCells, document.getElementById('board'), true);
+		makeCells(intendedSoluctionCells, document.getElementById('malli'), false);
 
 		const connectors = [];
 
@@ -324,12 +352,13 @@
 				const rect1 = cell1.dataset.index < cell2.dataset.index ? cell1 : cell2;
 				const rect2 = cell1.dataset.index < cell2.dataset.index ? cell2 : cell1;
 				const key = rect1.dataset.index + "-" + rect2.dataset.index;
-				//console.log(`disconnect(${cell1.dataset.index}, ${cell2.dataset.index}) -> ${key} & ${rect1.dataset.index}`);
+				//console.log(`trying to disconnect(${cell1.dataset.index}, ${cell2.dataset.index}) -> ${key} & ${rect1.dataset.index}`);
 				const line = connectors.find(l => l.dataset.key === key);
 				//console.log(rect1, line, connectors);
 				if (line) {
 					let index = connectors.indexOf(line);
 					//console.log(line, index, connectors);
+					//console.log(`disconnect(${cell1.dataset.index}, ${cell2.dataset.index}) -> ${key} & ${rect1.dataset.index}`);
 					connectors.splice(index, 1);
 					line.remove();
 				}
@@ -381,16 +410,28 @@
 
 		function paintIntendedSolution(cells) {
 			let prevI = -1;
+			let first = true;
 			intendedWords.forEach(arr => { prevI = -1;
+				const clss = first ? "intended-first" :"intended";
 				arr.forEach(index =>  {
-					if (prevI != -1)
-						connectMalli(cells[prevI], cells[index], "intended");
+					if (prevI != -1) {
+						connectMalli(cells[prevI], cells[index], clss);
+					}
 					prevI = index;
-					cells[index].classList.add("intended")
-				})
+					cells[index].classList.add(clss);
+				});
+				first = false;
+
+				const wlist = document.createElement('div');
+				wordListing.push(wlist);
+				wlist.textContent = "";
+				wlist.classList.add("loydetty_sana");
+				arr.forEach(index => { wlist.textContent += cells[index].dataset.letter; });
+				document.getElementById('loydetyt_malli_sanat').appendChild(wlist);
 			});
 		}
 		paintIntendedSolution(intendedSoluctionCells);
+		connectors.splice(0, connectors.length);
 
 
 		function makeButton(text, callback) {
@@ -425,16 +466,20 @@
 			clearSelected();
 		}).classList.add("luovuta");
 
+		let revealedClues = 0;
 		makeButton('vihje', () => {
-			while (foundWords.length > 0)
-				removeWord(foundWords[foundWords.length - 1]);
-			clearSelected();
+			if (revealedClues <= intendedWords.length) {
+				const vihjeI = intendedWords[revealedClues][0];
+				allCells[vihjeI].classList.add('vihje');
+				revealedClues += 1;
+			}
 		}).classList.add("vihje");
 
 		makeButton('yhdistä', () => {
 			if (!isAcceptableWord(selectedCells))
 			{
 				clearSelected();
+				updateCurrentError();
 				return;
 			}
 
@@ -459,6 +504,7 @@
 			for (i in newWord)
 				wlist.textContent += newWord[i].dataset.letter;
 			document.getElementById('loydetyt_sanat').appendChild(wlist);
+			updateCurrentWord();
 		}).classList.add("yhdista");
 
 		function clearSelected() {
@@ -497,6 +543,7 @@
 		}
 
 		function popSelection() {
+			console.log("pop!")
 			const index = selectedCells.length - 1;
 			if (index <= -1)
 			{
@@ -504,8 +551,8 @@
 				return;
 			}
 
+			const cell = selectedCells.splice(index, 1)[0];
 			cell.classList.remove('selected');
-			const cell = selectedCells.splice(index, 1);
 			if (index > 0)
 				disconnect(selectedCells[index - 1], cell);
 		}
@@ -524,6 +571,21 @@
 				selectedCells.push(cell);
 				cell.classList.toggle('selected');
 			}
+			updateCurrentWord();
+		}
+
+		function updateCurrentError() {
+			const sana = document.getElementById('sana');
+			sana.textContent = "";
+		}
+
+		function updateCurrentWord() {
+			const sana = document.getElementById('sana');
+			sana.textContent = "";
+			selectedCells.forEach(cell => {
+				sana.textContent += cell.dataset.letter;
+			});
+			document.getElementById('virhe').textContent = "";
 		}
 
 		function isAdjacent(cell) {
