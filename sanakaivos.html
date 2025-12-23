@@ -281,6 +281,12 @@
 					intendedWords.push([]);
 					continue;
 				}
+				if (intendedWords[intendedWords.length - 1].length >= 10) {
+					console.log("Intended word is too long. Assuming the url only has the letters.");
+					i = 0;
+					intendedWords.splice(0, intendedWords.length);
+					break;
+				}
 				intendedWords[intendedWords.length - 1].push(c);
 				intendedLetterCount += 1;
 			}
@@ -294,8 +300,12 @@
 
 		let intendedLetterCount = 0;
 		intendedWords.forEach(arr => intendedLetterCount += arr.length);
-		if (intendedLetterCount != letters.length) {
-			const msg = "ERROR: Mallivastauksessa väärä määrä kirjaimia (" + intendedLetterCount + ") kun pitäsi olla " + letters.length + ".";
+		if (intendedLetterCount == 0) {
+			const msg = "Mallivastaus puuttuu. Kaivos voi olla mahdoton.";
+			console.log(msg);
+			document.getElementById('virhe').textContent = msg;
+		} else if (intendedLetterCount != letters.length) {
+			const msg = "Mallivastauksessa väärä määrä kirjaimia: " + intendedLetterCount + ", kun pitäsi olla " + letters.length + ".";
 			console.log(msg);
 			document.getElementById('virhe').textContent = msg;
 		}
@@ -483,13 +493,18 @@
 		}).classList.add('luovuta');
 
 		let revealedClues = 0;
-		makeButton('vihje', () => {
-			if (revealedClues <= intendedWords.length) {
+		const vihje = makeButton('vihje', () => {
+			if (revealedClues < intendedWords.length) {
 				const vihjeI = intendedWords[revealedClues][0];
 				allCells[vihjeI].classList.add('vihje');
 				revealedClues += 1;
 			}
-		}).classList.add('vihje');
+			if (revealedClues >= intendedWords.length)
+				vihje.classList.add('disabled-button');
+		});
+		vihje.classList.add('vihje');
+		if (intendedWords.length == 0)
+			vihje.classList.add('disabled-button');
 
 		makeButton('yhdistä', () => {
 			if (!isAcceptableWord(selectedCells))
@@ -530,6 +545,8 @@
 
 		function showMalli() {
 			updateCurrentWord();
+			if (intendedWords.length == 0)
+				return;
 			document.getElementById('malli-container').classList.remove('hide');
 			document.getElementById('loydetyt_malli_sanat').classList.remove('hide');
 			function paintIntendedSolution(cells) {
