@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+	<!DOCTYPE html>
 <html lang="fi">
 <head>
 	<meta charset="UTF-8">
@@ -10,9 +10,9 @@
 		// editor-only style
 		.filter-list-container {
 			width: 500px;
+			height: 100%;
 		}
 		input[type="text"] {
-			width: 100%;
 			padding: 5px;
 			border: none;
 			border-radius: 5px;
@@ -28,6 +28,7 @@
 			background-color: #1e1e1e;
 			margin: 2px 0;
 			border-radius: 5px;
+			cursor: pointer;
 		}
 	</style>
 </head>
@@ -35,6 +36,7 @@
 	<div class="page-center">
 		<div class="column filter-list-container">
 			<input type="text" id="searchInput" placeholder="Type to filter words..." />
+			<button id="shuffle" onclick="enableShuffle = !enableShuffle; displayWords()">Shuffle</button>
 			<ul id="filter-list"></ul>
 		</div>
 
@@ -53,6 +55,7 @@
 		</div>
 	</div>
 	<script>
+		let enableShuffle = false;
 		const searchInput = document.getElementById('searchInput');
 		let scrollAmount = 0;
 		const filterListElements = [];
@@ -67,7 +70,19 @@
 			}
 
 			const query = searchInput.value.toUpperCase();
-			const filteredWords = validWords.filter(word => word.includes(query));
+			const spentLetters = countTotalLetters();
+			const maxLength = spentLetters < 30 ? 30 - spentLetters : 10;
+			const filteredWords = validWords.filter(word => word.includes(query) && word.length <= maxLength);
+			if (enableShuffle) {
+				scrollAmount = 0;
+				shuffle.textContent = "Sort";
+				for (let i = filteredWords.length; i-- > 0;) {
+					let j = Math.random() * (i + 1) | 0;
+					[filteredWords[i], filteredWords[j]] = [filteredWords[j], filteredWords[i]];
+				}
+			} else {
+				shuffle.textContent = "Shuffle";
+			}
 			if (scrollAmount < 0) {
 				scrollAmount = 0;
 			}
@@ -86,21 +101,17 @@
 					continue;
 				}
 				li.classList.remove("hide");
-				li.textContent = filteredWords[i];
+				li.textContent = "[" + filteredWords[i].length + "] " + filteredWords[i];
 				li.dataset.word = filteredWords[i];
 			}
 		}
 
-		displayWords();
 		document.addEventListener('wheel', (event) => {
 			scrollAmount += event.deltaY * 0.2;
 			displayWords();
 		});
 
 		searchInput.addEventListener('input', displayWords);
-
-		// Initial display of all words
-		displayWords(validWords);
 
 		const copyButton = document.getElementById('copyToClipboard');
 		copyButton.addEventListener('click', ()=>{
@@ -109,8 +120,10 @@
 				return;
 			}
 
-			const shareableUrl = "http://localhost/sanakaivos.html?" + generateLevelCode();
-			let msg = shareableUrl;
+
+			const domain = window.location.href.split('/kaivoseditor.html')[0];
+			const shareableUrl = domain + "/sanakaivos.html?" + generateLevelCode();
+			let msg = "Tein uuden sanakaivoksen! Pääsetkö sen läpi?\n" + shareableUrl;
 			//console.log("Copied to clipboard: " + msg);
 			navigator.clipboard.writeText(msg);
 			copyButton.textContent = "Kopioitu!";
@@ -280,6 +293,7 @@
 		const wordListing = [];
 		const connectors = [];
 
+		displayWords();
 		makeCells(allCells, document.getElementById('board'), true);
 
 		originalFoundWords.forEach(wi => {
@@ -394,6 +408,7 @@
 			const index = foundWords.indexOf(word);
 			foundWords.splice(index, 1);
 			updateCurrentWord();
+			displayWords();
 		}
 
 		function addWord(word, firstCellIndex) {
@@ -416,8 +431,10 @@
 
 				const i = wordListing.indexOf(wlist);
 				wordListing.splice(i, 1)[0].remove();
+				updateCurrentWord();
 			});
 			updateCurrentWord();
+			displayWords();
 		}
 
 		function clearSelected() {
@@ -508,20 +525,15 @@
 			return undefined;
 		}
 		function getNextLetter() {
-			//console.log("000 - " + currentListing);
 			const unusedListings = wordListing.filter(wl => !foundWords.find(w => w[0].dataset.index === wl.dataset.owner));
-			//console.log(unusedListings);
 			if (currentListing >= 0 && currentListing < wordListing.length) {
 				if (unusedListings.includes(wordListing[currentListing])) {
 					if (wordListing[currentListing].textContent.length > selectedCells.length) {
-						//console.log(wordListing[currentListing]);
-						//console.log("aaa - " + currentListing);
 						return wordListing[currentListing].textContent[selectedCells.length];
 					}
 				}
 				currentListing = -1;
 			}
-			//console.log("bbb - " + currentListing);
 			if (unusedListings.length > 0) {
 				if (unusedListings[0].textContent.length > selectedCells.length) {
 					currentListing = wordListing.indexOf(unusedListings[0]);
@@ -529,7 +541,6 @@
 					return unusedListings[0].textContent[selectedCells.length];
 				}
 			}
-			//console.log("ccc - " + currentListing);
 			currentListing = -1;
 			return undefined;
 		}
@@ -552,6 +563,9 @@
 			selectedCells.forEach(cell => {
 				sana.textContent += cell.dataset.letter;
 			});
+			if (selectedCells.length <= 0) {
+				sana.textContent = countSelectedLetters() + "/" + countTotalLetters();
+			}
 			document.getElementById('virhe').textContent = "";
 			
 			if (countSelectedLetters() == 30)
@@ -559,6 +573,12 @@
 			else
 				copyButton.textContent = "Peru";
 			//koodi.textContent = generateLevelCode();
+		}
+
+		function countTotalLetters() {
+			let count = 0;
+			wordListing.forEach(wl => count += wl.textContent.length);
+			return count;
 		}
 
 		function isAdjacent(cell) {
