@@ -5,211 +5,12 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Kaivos editori</title>
 	<script src="sanat.js"></script>
+	<link rel="stylesheet" href="style.css">
 	<style>
-		body {
-			font-family: Arial, sans-serif;
-			background-color: #222222;
-			color: #f4f4f4;
-			margin: 0;
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			padding: 10px;
-			gap: 50px;
-			user-select: none;
-			-webkit-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-		}
-		.column {
-			display: flex;
-			flex-direction: column;
-		}
-		h1 {
-			color: #f4f4f4;
-			text-align: center;
-			margin-bottom: 10px;
-		}
-		#sana-container {
-			gap: 10px;
-			margin-bottom: 5px;
-			height: 15px;
-			width: 100%;
-		}
-		.viesti {
-			display: flex;
-			justify-content: center;
-			align:center;
-			width:100%;
-			position:absolute;
-			top:0;
-			left:0;
-		}
-		#virhe {
-			color: red;
-		}
-		.sana_list {
-			display: flex;
-			justify-content: center;
-			flex-wrap: wrap;
-			row-gap: 2px;
-			column-gap: 4px;
-			margin-bottom: 10px;
-			height: 70px;
-			width: 250px;
-		}
-		.loydetty_sana {
-			height: 28px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background-color: #4c4c4c;
-			border: 2px solid #555555;
-			border-radius: 10px;
-			padding-left: 5px;
-			padding-right: 5px;
-			user-select: none;
-			-webkit-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-		}
-		.loydetty_sana.next {
-			background-color: #4c4cec;
-			border-color: #5555f5;
-		}
-		.loydetty_sana.used {
-			background-color: #333;
-			border-color: #262626;
-		}
-		.board {
-			display: grid;
-			grid-template-columns: repeat(5, 1fr);
-			gap: 5px;
-			margin-bottom: 20px;
-		}
-		.cell {
-			width: 36px;
-			height: 34px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background-color: #333333;
-			border: 2px solid #262626;
-			border-radius: 18px;
-			cursor: pointer;
-			transition: background-color 0.3s;
-			transition: border-color 0.3s;
-			user-select: none;
-			-webkit-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-		}
-		.cell.selected {
-			background-color: #55f;
-			border-color: #44e;
-			color: #e0e0fc;
-		}
-		.cell.used {
-			background-color: #5c5c5c;
-			border-color: #555555;
-			color: #bbb;
-		}
-		.cell.intended {
-			background-color: #5c5c5c;
-			border-color: #555555;
-			color: #bbb;
-		}
-		.cell.intended-first {
-			background-color: #55f;
-			border-color: #44e;
-			color: #bbb;
-		}
-		.cell.vihje {
-			border-color: #eee !important;
-		}
-		@keyframes bgFade {
-		  from { background-color: transparent; }
-		  to   { background-color: #44e; }
-		}
-		@keyframes bgUsed {
-		  from { background-color: #44e; }
-		  to   { background-color: #555555; }
-		}
-		.line {
-			position: absolute;
-			width: 2px;
-			height: 10px;
-		}
-		.line.selected {
-			background-color: #5c5cb8;
-			animation: bgFade 0.2s ease forwards;
-			margin-top: 0px;
-		}
-		.line.used {
-			background-color: #555555;
-			animation: bgUsed 0.2s ease forwards;
-		}
-		.line.intended-first {
-			background-color: #44e
-		}
-		.line.intended {
-			background-color: #555555;
-		}
-		.button {
-			padding: 10px 15px;
-			background-color: #4b4b4b;
-			color: white;
-			border: none;
-			border-radius: 15px;
-			cursor: pointer;
-			transition: background-color 0.3s;
-			align-items: center;
-			justify-content: center;
-			display: flex;
-		}
-		.button.vihje {
-			border-radius: 20px;
-			margin-right: 10px;
-			margin-right: 10px;
-			padding-left: 0px;
-			padding-right: 0px;
-			width: 40px;
-		}
-		.button.yhdista {
-			background-color: #007bff;
-		}
-		.button:hover {
-			background-color: #363636;
-		}
-		.button.yhdista:hover {
-			background-color: #0056b3;
-		}
-		.button-container {
-			display: flex;
-			justify-content: center;
-			gap: 10px;
-			margin-bottom: 10px;
-		}
-		.disabled {
-			pointer-events: none;
-		}
-		.disabled-button {
-			background-color: #333 !important;
-			color: #999 !important;
-		}
-		.hide {
-			display: none !important;
-		}
-
-
-
-
-// ===================== editor ========================
-
+		// editor-only style
 		.filter-list-container {
 			width: 500px;
 		}
-
 		input[type="text"] {
 			width: 100%;
 			padding: 5px;
@@ -218,12 +19,10 @@
 			background-color: #333;
 			color: #ffffff;
 		}
-
 		ul {
 			list-style-type: none;
 			padding: 0;
 		}
-
 		li {
 			padding: 0px;
 			background-color: #1e1e1e;
@@ -233,24 +32,25 @@
 	</style>
 </head>
 <body>
-
-	<div class="column filter-list-container">
-		<input type="text" id="searchInput" placeholder="Type to filter words..." />
-		<ul id="filter-list"></ul>
-	</div>
-
-	<div class="column">
-		<h1>Kaivos editori</h1>
-		<div id="sana-container" style="position:relative;height:25px">
-			<div id="sana" class="viesti"></div>
-			<div id="virhe" class="viesti"></div>
+	<div class="page-center">
+		<div class="column filter-list-container">
+			<input type="text" id="searchInput" placeholder="Type to filter words..." />
+			<ul id="filter-list"></ul>
 		</div>
-		<div id="board-container">
-			<div id="board" class="board"></div>
+
+		<div class="column">
+			<h1>Kaivos editori</h1>
+			<div id="sana-container" style="position:relative;height:25px">
+				<div id="sana" class="viesti"></div>
+				<div id="virhe" class="viesti"></div>
+			</div>
+			<div id="board-container">
+				<div id="board" class="board"></div>
+			</div>
+			<div id="loydetyt_sanat" class="sana_list"></div>
+			<div id="kopioi-tulos" class="button-container"><button id="copyToClipboard" class='button'>Kopioi linkki</button></div>
+			<!--div id="koodi" class="button"></div-->
 		</div>
-		<div id="loydetyt_sanat" class="sana_list"></div>
-		<div id="kopioi-tulos" class="button-container"><button id="copyToClipboard" class='button'>Kopioi linkki</button></div>
-		<!--div id="koodi" class="button"></div-->
 	</div>
 	<script>
 		const searchInput = document.getElementById('searchInput');
@@ -273,7 +73,7 @@
 			}
 			const leaveVisible = Math.floor(filteredWords.length * 0.5);
 			if (scrollAmount + leaveVisible > filteredWords.length) {
-				scrollAmount = filteredWords.length - leaveVisible;
+				scrollAmount = filteredWords.length - leaveVisible - 1;
 			}
 			//console.log(scrollAmount);
 			for (let ii = 0; ii < filterListElements.length; ii++) {
@@ -301,6 +101,20 @@
 
 		// Initial display of all words
 		displayWords(validWords);
+
+		const copyButton = document.getElementById('copyToClipboard');
+		copyButton.addEventListener('click', ()=>{
+			if (countSelectedLetters() != 30) {
+				clearSelected();
+				return;
+			}
+
+			const shareableUrl = "http://localhost/sanakaivos.html?" + generateLevelCode();
+			let msg = shareableUrl;
+			//console.log("Copied to clipboard: " + msg);
+			navigator.clipboard.writeText(msg);
+			copyButton.textContent = "Kopioitu!";
+		});
 
 		const encryptionKey = "jy2d7ukxpX1Dz04YgFaK8ChHwOW9qlr";
 		function encodeLevelCode(letters, intendedWords) {
@@ -410,17 +224,25 @@
 
 		function makeCells(resultCells, parentElement, interactive) {
 			letters.forEach((letter, index) => {
+				const cellWrapper = document.createElement('div');
+				cellWrapper.classList.add('cell-wrapper');
+				parentElement.appendChild(cellWrapper);
+
 				const cell = document.createElement('div');
+				cellWrapper.appendChild(cell);
+
 				cell.textContent = letter;
 				cell.classList.add('cell');
+				cell.classList.add('intended');
 				cell.dataset.index = index;
 				cell.dataset.letter = letter;
-				parentElement.appendChild(cell);
 				resultCells.push(cell);
-				if (!interactive)
+				if (!interactive) {
+					cellWrapper.classList.add('non-interactive');
 					return;
+				}
 
-				cell.addEventListener('click', () => {
+				cellWrapper.addEventListener('click', () => {
 					const selectedIndex = selectedCells.indexOf(cell);
 					if (selectedIndex > -1 && selectedIndex + 1 == selectedCells.length) {
 						toggleSelection(cell);
@@ -531,7 +353,6 @@
 				line.style.left = `${cx + ox - w*0.5}px`;
 				line.style.transform = `rotate(${angle}rad)`;
 				line.style.width = `${w}px`;
-				line.style.height = `${h}px`;
 				line.style.zIndex = -1;
 				//console.log(rect1, rect2, line)
 				connectors.push(line);
@@ -544,7 +365,7 @@
 			for (let i = 0; i < allCells.length; ++i) {
 				letters.push(allCells[i].dataset.letter);
 			}
-			console.log(letters);
+			//console.log(letters);
 			foundWords.forEach(word => {
 				const result = [];
 				word.forEach(l => result.push(l.dataset.index));
@@ -560,19 +381,6 @@
 			return foundCount;
 		}
 
-		const copyButton = document.getElementById('copyToClipboard');
-		copyButton.addEventListener('click', ()=>{
-			if (countSelectedLetters() != 30) {
-				clearSelected();
-				return;
-			}
-
-			const shareableUrl = "http://localhost/sanakaivos.html?" + generateLevelCode();
-			let msg = shareableUrl;
-			console.log("Copied to clipboard: " + msg);
-			navigator.clipboard.writeText(msg);
-			copyButton.textContent = "Kopioitu!";
-		});
 		updateCurrentWord();
 
 		function removeWord(word) {
@@ -601,7 +409,7 @@
 					if (foundWords[i][0].dataset.index == wlist.dataset.owner) {
 						removeWord(foundWords[i]);
 						wasFound = true;
-						console.log("found");
+						//console.log("found");
 					}
 				}
 				if (wasFound) return;
@@ -609,6 +417,7 @@
 				const i = wordListing.indexOf(wlist);
 				wordListing.splice(i, 1)[0].remove();
 			});
+			updateCurrentWord();
 		}
 
 		function clearSelected() {
@@ -627,11 +436,11 @@
 		}
 
 		function popSelection() {
-			console.log("pop!")
+			//console.log("pop!")
 			const index = selectedCells.length - 1;
 			if (index <= -1)
 			{
-				console.log("Trying to unselect non-selected cell.");
+				//console.log("Trying to unselect non-selected cell.");
 				return;
 			}
 
@@ -651,7 +460,7 @@
 			} else {
 				const nextLetter = getNextLetter();
 				if (nextLetter === undefined) {
-					console.log("No more letters to place.");
+					//console.log("No more letters to place.");
 					currentListing = -1;
 					return;
 				}
@@ -667,22 +476,22 @@
 				let wlist = getCurrentWordListing();
 				if (wlist.textContent.length == selectedCells.length) {
 					currentListing = -1;
-					console.log("Done!");
+					//console.log("Done!");
 					const newWord = [];
 					selectedCells.forEach((cell) => {
 						newWord.push(cell);
 						cell.classList.add("used");
 					});
 					foundWords.push(newWord);
-					console.log(foundWords);
+					//console.log(foundWords);
 					clearSelected();
 					for (i in newWord) {
 						if (+i + 1 < newWord.length)
 							connect(newWord[i], newWord[+i + 1], "used");
 					}
 					wlist.dataset.owner = newWord[0].dataset.index;
-					updateCurrentWord();
 				}
+				updateCurrentWord();
 			}
 		}
 
@@ -699,28 +508,28 @@
 			return undefined;
 		}
 		function getNextLetter() {
-			console.log("000 - " + currentListing);
+			//console.log("000 - " + currentListing);
 			const unusedListings = wordListing.filter(wl => !foundWords.find(w => w[0].dataset.index === wl.dataset.owner));
-			console.log(unusedListings);
+			//console.log(unusedListings);
 			if (currentListing >= 0 && currentListing < wordListing.length) {
 				if (unusedListings.includes(wordListing[currentListing])) {
 					if (wordListing[currentListing].textContent.length > selectedCells.length) {
-						console.log(wordListing[currentListing]);
-						console.log("aaa - " + currentListing);
+						//console.log(wordListing[currentListing]);
+						//console.log("aaa - " + currentListing);
 						return wordListing[currentListing].textContent[selectedCells.length];
 					}
 				}
 				currentListing = -1;
 			}
-			console.log("bbb - " + currentListing);
+			//console.log("bbb - " + currentListing);
 			if (unusedListings.length > 0) {
 				if (unusedListings[0].textContent.length > selectedCells.length) {
 					currentListing = wordListing.indexOf(unusedListings[0]);
-					console.log("ddd - " + currentListing);
+					//console.log("ddd - " + currentListing);
 					return unusedListings[0].textContent[selectedCells.length];
 				}
 			}
-			console.log("ccc - " + currentListing);
+			//console.log("ccc - " + currentListing);
 			currentListing = -1;
 			return undefined;
 		}

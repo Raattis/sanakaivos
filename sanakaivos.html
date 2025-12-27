@@ -4,207 +4,31 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Sanakaivos</title>
-	<style>
-		body {
-			font-family: Arial, sans-serif;
-			background-color: #222222;
-			color: #f4f4f4;
-			margin: 0;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			padding: 10px;
-			user-select: none;
-			-webkit-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-		}
-		h1 {
-			color: #f4f4f4;
-			text-align: center;
-			margin-bottom: 10px;
-		}
-		#sana-container {
-			gap: 10px;
-			margin-bottom: 5px;
-			height: 15px;
-			width: 100%;
-		}
-		.viesti {
-			display: flex;
-			justify-content: center;
-			align:center;
-			width:100%;
-			position:absolute;
-			top:0;
-			left:0;
-		}
-		#virhe {
-			color: red;
-		}
-		.sana_list {
-			display: flex;
-			justify-content: center;
-			flex-wrap: wrap;
-			row-gap: 2px;
-			column-gap: 4px;
-			margin-bottom: 10px;
-			height: 70px;
-			width: 250px;
-		}
-		.loydetty_sana {
-			height: 28px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background-color: #4c4c4c;
-			border: 2px solid #555555;
-			border-radius: 10px;
-			padding-left: 5px;
-			padding-right: 5px;
-			user-select: none;
-			-webkit-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-		}
-		.board {
-			display: grid;
-			grid-template-columns: repeat(5, 1fr);
-			gap: 5px;
-			margin-bottom: 20px;
-		}
-		.cell {
-			width: 36px;
-			height: 34px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background-color: #333333;
-			border: 2px solid #262626;
-			border-radius: 18px;
-			cursor: pointer;
-			transition: background-color 0.3s;
-			transition: border-color 0.3s;
-			user-select: none;
-			-webkit-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-		}
-		.cell.selected {
-			background-color: #55f;
-			border-color: #44e;
-			color: #e0e0fc;
-		}
-		.cell.used {
-			background-color: #5c5c5c;
-			border-color: #555555;
-			color: #bbb;
-		}
-		.cell.intended {
-			background-color: #5c5c5c;
-			border-color: #555555;
-			color: #bbb;
-		}
-		.cell.intended-first {
-			background-color: #55f;
-			border-color: #44e;
-			color: #bbb;
-		}
-		.cell.vihje {
-			border-color: #eee !important;
-		}
-		@keyframes bgFade {
-		  from { background-color: transparent; }
-		  to   { background-color: #44e; }
-		}
-		@keyframes bgUsed {
-		  from { background-color: #44e; }
-		  to   { background-color: #555555; }
-		}
-		.line {
-			position: absolute;
-			width: 2px;
-			height: 10px;
-		}
-		.line.selected {
-			background-color: #5c5cb8;
-			animation: bgFade 0.2s ease forwards;
-			margin-top: 0px;
-		}
-		.line.used {
-			background-color: #555555;
-			animation: bgUsed 0.2s ease forwards;
-		}
-		.line.intended-first {
-			background-color: #44e
-		}
-		.line.intended {
-			background-color: #555555;
-		}
-		.button {
-			padding: 10px 15px;
-			background-color: #4b4b4b;
-			color: white;
-			border: none;
-			border-radius: 15px;
-			cursor: pointer;
-			transition: background-color 0.3s;
-			align-items: center;
-			justify-content: center;
-			display: flex;
-		}
-		.button.vihje {
-			border-radius: 20px;
-			margin-right: 10px;
-			margin-right: 10px;
-			padding-left: 0px;
-			padding-right: 0px;
-			width: 40px;
-		}
-		.button.yhdista {
-			background-color: #007bff;
-		}
-		.button:hover {
-			background-color: #363636;
-		}
-		.button.yhdista:hover {
-			background-color: #0056b3;
-		}
-		.button-container {
-			display: flex;
-			justify-content: center;
-			gap: 10px;
-			margin-bottom: 10px;
-		}
-		.disabled {
-			pointer-events: none;
-		}
-		.disabled-button {
-			background-color: #333 !important;
-			color: #999 !important;
-		}
-		.hide {
-			display: none !important;
-		}
-	</style>
+	<link rel="stylesheet" href="style.css">
 </head>
 <body>
-	<h1>Sanakaivos</h1>
-	<div id="sana-container" style="position:relative;height:25px">
-		<div id="sana" class="viesti"></div>
-		<div id="virhe" class="viesti"></div>
-		<div id="tulos" class="viesti"></div>
+	<div class="page-center">
+		<div class="column">
+			<h1>Sanakaivos</h1>
+			<div id="sana-container" style="position:relative;height:25px">
+				<div id="sana" class="viesti"></div>
+				<div id="virhe" class="viesti"></div>
+				<div id="tulos" class="viesti"></div>
+			</div>
+			<div id="board-container">
+				<div id="board" class="board"></div>
+			</div>
+			<div id="buttons" class="button-container"></div>
+			<div id="kopioi-tulos" class="button-container hide"><button id="copyToClipboard" class='button'>Kopioi tulos</button></div>
+			<div id="loydetyt_sanat" class="sana_list"></div>
+		</div>
+		<div class="column">
+			<div id="malli-container" class="hide">
+				<div id="malli" class="board-intended"></div>
+			</div>
+			<div id="loydetyt_malli_sanat" class="sana_list hide"></div>
+		</div>
 	</div>
-	<div id="board-container">
-		<div id="board" class="board"></div>
-	</div>
-	<div id="buttons" class="button-container"></div>
-	<div id="kopioi-tulos" class="button-container hide"><button id="copyToClipboard" class='button'>Kopioi tulos</button></div>
-	<div id="loydetyt_sanat" class="sana_list"></div>
-	<div id="malli-container" class="hide">
-		<div id="malli" class="board"></div>
-	</div>
-	<div id="loydetyt_malli_sanat" class="sana_list hide"></div>
 
 	<script>
 		const encryptionKey = "jy2d7ukxpX1Dz04YgFaK8ChHwOW9qlr";
@@ -322,24 +146,30 @@
 		}
 
 		const allCells = [];
-		const intendedSoluctionCells = [];
 		const selectedCells = [];
 		const foundWords = [];
 		const wordListing = [];
 
 		function makeCells(resultCells, parentElement, interactive) {
 			letters.forEach((letter, index) => {
+				const cellWrapper = document.createElement('div');
+				cellWrapper.classList.add('cell-wrapper');
+				parentElement.appendChild(cellWrapper);
+
 				const cell = document.createElement('div');
+				cellWrapper.appendChild(cell);
+
 				cell.textContent = letter;
 				cell.classList.add('cell');
 				cell.dataset.index = index;
 				cell.dataset.letter = letter;
-				parentElement.appendChild(cell);
 				resultCells.push(cell);
-				if (!interactive)
+				if (!interactive) {
+					cellWrapper.classList.add('non-interactive');
 					return;
+				}
 
-				cell.addEventListener('click', () => {
+				cellWrapper.addEventListener('click', () => {
 					const selectedIndex = selectedCells.indexOf(cell);
 					if (selectedIndex > -1 && selectedIndex + 1 == selectedCells.length) {
 						toggleSelection(cell);
@@ -371,7 +201,6 @@
 			});
 		}
 		makeCells(allCells, document.getElementById('board'), true);
-		makeCells(intendedSoluctionCells, document.getElementById('malli'), false);
 
 		const connectors = [];
 
@@ -381,13 +210,9 @@
 				const rect1 = cell1.dataset.index < cell2.dataset.index ? cell1 : cell2;
 				const rect2 = cell1.dataset.index < cell2.dataset.index ? cell2 : cell1;
 				const key = rect1.dataset.index + "-" + rect2.dataset.index;
-				//console.log(`trying to disconnect(${cell1.dataset.index}, ${cell2.dataset.index}) -> ${key} & ${rect1.dataset.index}`);
 				const line = connectors.find(l => l.dataset.key === key);
-				//console.log(rect1, line, connectors);
 				if (line) {
 					let index = connectors.indexOf(line);
-					//console.log(line, index, connectors);
-					//console.log(`disconnect(${cell1.dataset.index}, ${cell2.dataset.index}) -> ${key} & ${rect1.dataset.index}`);
 					connectors.splice(index, 1);
 					line.remove();
 				}
@@ -429,9 +254,7 @@
 				line.style.left = `${cx + ox - w*0.5}px`;
 				line.style.transform = `rotate(${angle}rad)`;
 				line.style.width = `${w}px`;
-				line.style.height = `${h}px`;
 				line.style.zIndex = -1;
-				//console.log(rect, line, x1, x2, y1, y2, angle);
 				//console.log(rect1, rect2, line)
 				connectors.push(line);
 				return line;
@@ -494,6 +317,7 @@
 			clearSelected();
 			if (endTime) return;
 			disableButtons();
+			showSolution();
 			showMalli();
 			getResultTime();
 		}
@@ -554,35 +378,56 @@
 				victory();
 		}).classList.add('yhdista');
 
+		function paintWordsToCells(cells, words, wordListHolder, container) {
+			let prevI = -1;
+			let first = true;
+			cells.forEach(cell => cell.classList.add('intended'));
+			words.forEach(arr => { prevI = -1;
+				arr.forEach(index =>  {
+					if (first)
+						cells[index].classList.add("selected");
+					if (prevI != -1) {
+						const a = cells[prevI];
+						const b = cells[index];
+						const clss = first ? "intended-first" : "intended";
+						setTimeout(() => { connectImpl(container, a, b, clss); }, 0); // Delay because otherwise these will be misaligned for some reason
+					}
+					prevI = index;
+				});
+				first = false;
+				setTimeout(() => { connectors.splice(0, connectors.length); }); // Avoid removing connectors
+				if (!wordListHolder)
+					return;
+
+				const wlist = document.createElement('div');
+				wordListing.push(wlist);
+				wlist.textContent = "";
+				wlist.classList.add("loydetty_sana");
+				arr.forEach(index => { wlist.textContent += cells[index].dataset.letter; });
+				wordListHolder.appendChild(wlist);
+			});
+		}
+
+		function showSolution() {
+			const board = document.getElementById('board');
+			board.replaceChildren();
+			connectors.splice(0,connectors.length).forEach(connector => connector.remove());
+
+			const gameOverCells = [];
+			makeCells(gameOverCells, board, false);
+			paintWordsToCells(gameOverCells, foundWords.map(arr => arr.map(cell => +cell.dataset.index)), undefined, document.getElementById('board-container'));
+		}
+
 		function showMalli() {
 			updateCurrentWord();
 			if (intendedWords.length == 0)
 				return;
 			document.getElementById('malli-container').classList.remove('hide');
 			document.getElementById('loydetyt_malli_sanat').classList.remove('hide');
-			function paintIntendedSolution(cells) {
-				let prevI = -1;
-				let first = true;
-				intendedWords.forEach(arr => { prevI = -1;
-					const clss = first ? "intended-first" :"intended";
-					arr.forEach(index =>  {
-						if (prevI != -1) {
-							connectMalli(cells[prevI], cells[index], clss);
-						}
-						prevI = index;
-						cells[index].classList.add(clss);
-					});
-					first = false;
 
-					const wlist = document.createElement('div');
-					wordListing.push(wlist);
-					wlist.textContent = "";
-					wlist.classList.add("loydetty_sana");
-					arr.forEach(index => { wlist.textContent += cells[index].dataset.letter; });
-					document.getElementById('loydetyt_malli_sanat').appendChild(wlist);
-				});
-			}
-			paintIntendedSolution(intendedSoluctionCells);
+			const intendedSoluctionCells = [];
+			makeCells(intendedSoluctionCells, document.getElementById('malli'), false);
+			paintWordsToCells(intendedSoluctionCells, intendedWords, document.getElementById('loydetyt_malli_sanat'), document.getElementById('malli-container'));
 		}
 
 		const startTime = new Date();
@@ -610,13 +455,10 @@
 
 		function clearSelected() {
 			selectedCells.forEach((cell) => {
-				//console.log(`clearing: ${cell.dataset.index}`);
 				cell.classList.remove('selected');
 			});
-			//console.log(selectedCells.length, selectedCells);
 			for (i in selectedCells)
 			{
-				//console.log(i, selectedCells);
 				if (+i + 1 < selectedCells.length)
 					disconnect(selectedCells[i], selectedCells[+i + 1]);
 			}
@@ -644,7 +486,6 @@
 		}
 
 		function popSelection() {
-			console.log("pop!")
 			const index = selectedCells.length - 1;
 			if (index <= -1)
 			{
@@ -664,9 +505,11 @@
 				if (selectedCells.length == 1) { clearSelected(); }
 				else { popSelection(); }
 			} else {
+				if (selectedCells.length >= 10)
+					return;
+
 				if (selectedCells.length > 0)
 				{
-					//console.log(selectedCells, cell);
 					connect(selectedCells[selectedCells.length - 1], cell, "selected");
 				}
 				selectedCells.push(cell);
