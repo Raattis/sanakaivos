@@ -291,10 +291,20 @@
 				intendedWords[intendedWords.length - 1].push(c);
 				intendedLetterCount += 1;
 			}
+			
 			const a = +('A'.charCodeAt(0));
 			for (; letters.length < 30 && i < levelCode.length; ++i) {
-				const c = decode(levelCode[+i]);
-				letters.push(String.fromCharCode(a + c));
+				const charCode = decode(levelCode[+i]);
+				let str = undefined;
+				if (charCode == 26)
+					str = 'Å';
+				else if (charCode == 27)
+					str = 'Ä';
+				else if (charCode == 28)
+					str = 'Ö';
+				else
+					str = String.fromCharCode(a + charCode)
+				letters.push(str);
 			}
 		}
 		decodeLevelCode(givenLevelCode, letters, intendedWords);

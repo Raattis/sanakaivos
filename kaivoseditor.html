@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Kaivos editori</title>
+	<script src="sanat.js"></script>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #222222;
+			color: #f4f4f4;
+			margin: 0;
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			padding: 10px;
+			gap: 50px;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+		}
+		.column {
+			display: flex;
+			flex-direction: column;
+		}
+		h1 {
+			color: #f4f4f4;
+			text-align: center;
+			margin-bottom: 10px;
+		}
+		#sana-container {
+			gap: 10px;
+			margin-bottom: 5px;
+			height: 15px;
+			width: 100%;
+		}
+		.viesti {
+			display: flex;
+			justify-content: center;
+			align:center;
+			width:100%;
+			position:absolute;
+			top:0;
+			left:0;
+		}
+		#virhe {
+			color: red;
+		}
+		.sana_list {
+			display: flex;
+			justify-content: center;
+			flex-wrap: wrap;
+			row-gap: 2px;
+			column-gap: 4px;
+			margin-bottom: 10px;
+			height: 70px;
+			width: 250px;
+		}
+		.loydetty_sana {
+			height: 28px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background-color: #4c4c4c;
+			border: 2px solid #555555;
+			border-radius: 10px;
+			padding-left: 5px;
+			padding-right: 5px;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+		}
+		.loydetty_sana.next {
+			background-color: #4c4cec;
+			border-color: #5555f5;
+		}
+		.loydetty_sana.used {
+			background-color: #333;
+			border-color: #262626;
+		}
+		.board {
+			display: grid;
+			grid-template-columns: repeat(5, 1fr);
+			gap: 5px;
+			margin-bottom: 20px;
+		}
+		.cell {
+			width: 36px;
+			height: 34px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background-color: #333333;
+			border: 2px solid #262626;
+			border-radius: 18px;
+			cursor: pointer;
+			transition: background-color 0.3s;
+			transition: border-color 0.3s;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+		}
+		.cell.selected {
+			background-color: #55f;
+			border-color: #44e;
+			color: #e0e0fc;
+		}
+		.cell.used {
+			background-color: #5c5c5c;
+			border-color: #555555;
+			color: #bbb;
+		}
+		.cell.intended {
+			background-color: #5c5c5c;
+			border-color: #555555;
+			color: #bbb;
+		}
+		.cell.intended-first {
+			background-color: #55f;
+			border-color: #44e;
+			color: #bbb;
+		}
+		.cell.vihje {
+			border-color: #eee !important;
+		}
+		@keyframes bgFade {
+		  from { background-color: transparent; }
+		  to   { background-color: #44e; }
+		}
+		@keyframes bgUsed {
+		  from { background-color: #44e; }
+		  to   { background-color: #555555; }
+		}
+		.line {
+			position: absolute;
+			width: 2px;
+			height: 10px;
+		}
+		.line.selected {
+			background-color: #5c5cb8;
+			animation: bgFade 0.2s ease forwards;
+			margin-top: 0px;
+		}
+		.line.used {
+			background-color: #555555;
+			animation: bgUsed 0.2s ease forwards;
+		}
+		.line.intended-first {
+			background-color: #44e
+		}
+		.line.intended {
+			background-color: #555555;
+		}
+		.button {
+			padding: 10px 15px;
+			background-color: #4b4b4b;
+			color: white;
+			border: none;
+			border-radius: 15px;
+			cursor: pointer;
+			transition: background-color 0.3s;
+			align-items: center;
+			justify-content: center;
+			display: flex;
+		}
+		.button.vihje {
+			border-radius: 20px;
+			margin-right: 10px;
+			margin-right: 10px;
+			padding-left: 0px;
+			padding-right: 0px;
+			width: 40px;
+		}
+		.button.yhdista {
+			background-color: #007bff;
+		}
+		.button:hover {
+			background-color: #363636;
+		}
+		.button.yhdista:hover {
+			background-color: #0056b3;
+		}
+		.button-container {
+			display: flex;
+			justify-content: center;
+			gap: 10px;
+			margin-bottom: 10px;
+		}
+		.disabled {
+			pointer-events: none;
+		}
+		.disabled-button {
+			background-color: #333 !important;
+			color: #999 !important;
+		}
+		.hide {
+			display: none !important;
+		}
+
+
+
+
+// ===================== editor ========================
+
+		.filter-list-container {
+			width: 500px;
+		}
+
+		input[type="text"] {
+			width: 100%;
+			padding: 5px;
+			border: none;
+			border-radius: 5px;
+			background-color: #333;
+			color: #ffffff;
+		}
+
+		ul {
+			list-style-type: none;
+			padding: 0;
+		}
+
+		li {
+			padding: 0px;
+			background-color: #1e1e1e;
+			margin: 2px 0;
+			border-radius: 5px;
+		}
+	</style>
+</head>
+<body>
+
+	<div class="column filter-list-container">
+		<input type="text" id="searchInput" placeholder="Type to filter words..." />
+		<ul id="filter-list"></ul>
+	</div>
+
+	<div class="column">
+		<h1>Kaivos editori</h1>
+		<div id="sana-container" style="position:relative;height:25px">
+			<div id="sana" class="viesti"></div>
+			<div id="virhe" class="viesti"></div>
+		</div>
+		<div id="board-container">
+			<div id="board" class="board"></div>
+		</div>
+		<div id="loydetyt_sanat" class="sana_list"></div>
+		<div id="kopioi-tulos" class="button-container"><button id="copyToClipboard" class='button'>Kopioi linkki</button></div>
+		<!--div id="koodi" class="button"></div-->
+	</div>
+	<script>
+		const searchInput = document.getElementById('searchInput');
+		let scrollAmount = 0;
+		const filterListElements = [];
+		function displayWords() {
+			while (filterListElements.length < 20) {
+				const li = document.createElement('li');
+				document.getElementById('filter-list').appendChild(li);
+				filterListElements.push(li)
+				li.addEventListener('click', () => {
+					addWord(li.dataset.word, -1);
+				});
+			}
+
+			const query = searchInput.value.toUpperCase();
+			const filteredWords = validWords.filter(word => word.includes(query));
+			if (scrollAmount < 0) {
+				scrollAmount = 0;
+			}
+			const leaveVisible = Math.floor(filteredWords.length * 0.5);
+			if (scrollAmount + leaveVisible > filteredWords.length) {
+				scrollAmount = filteredWords.length - leaveVisible;
+			}
+			//console.log(scrollAmount);
+			for (let ii = 0; ii < filterListElements.length; ii++) {
+				const i = Math.floor(ii + scrollAmount);
+				//console.log(`${ii}/${filterListElements.length} -> ${i}/${filteredWords.length}`);
+				const li = filterListElements[ii];
+				if (i >= filteredWords.length) {
+					li.classList.add("hide");
+					li.dataset.word = ""
+					continue;
+				}
+				li.classList.remove("hide");
+				li.textContent = filteredWords[i];
+				li.dataset.word = filteredWords[i];
+			}
+		}
+
+		displayWords();
+		document.addEventListener('wheel', (event) => {
+			scrollAmount += event.deltaY * 0.2;
+			displayWords();
+		});
+
+		searchInput.addEventListener('input', displayWords);
+
+		// Initial display of all words
+		displayWords(validWords);
+
+		const encryptionKey = "jy2d7ukxpX1Dz04YgFaK8ChHwOW9qlr";
+		function encodeLevelCode(letters, intendedWords) {
+			function encode(c) {
+				c = +c;
+				if (c < 0 || encryptionKey.length <= c) {
+					const msg = "ERROR: Encode failed = " + c
+					console.log(msg);
+					document.getElementById('virhe').textContent = msg;
+				}
+				return encryptionKey[c];
+			}
+			let levelCode = "";
+			for (let i = 0; i < intendedWords.length; i += 1) {
+				if (i != 0)
+					levelCode += encode(encryptionKey.length - 1);
+				for (let j = 0; j < intendedWords[i].length; j += 1) {
+					levelCode += encode(intendedWords[i][j]);
+				}
+			}
+			levelCode.length -= 1;
+			const a = +('A'.charCodeAt(0));
+			for (let i = 0; i < letters.length; i += 1) {
+				let charCode = letters[i].charCodeAt(0) - a;
+				if (charCode < 0 || charCode >= 26) {
+					if (letters[i] == 'Å')
+						charCode = 26;
+					if (letters[i] == 'Ä')
+						charCode = 27;
+					if (letters[i] == 'Ö')
+						charCode = 28;
+				}
+				levelCode += encode(charCode);
+			}
+			return levelCode;
+		}
+
+		function decodeLevelCode(levelCode, letters, intendedWords) {
+			function decode(c) {
+				if (!encryptionKey.includes(c)) {
+					const msg = "ERROR: Decode failed = " + c
+					console.log(msg);
+					document.getElementById('virhe').textContent = msg;
+				}
+				return encryptionKey.indexOf(c);
+			}
+
+			letters.splice(0, letters.length);
+			intendedWords.splice(0, intendedWords.length);
+			intendedWords.push([]);
+			let intendedLetterCount = 0;
+			let i = 0;
+			const mayContainIntendedWords = levelCode.length >= 62 && levelCode.includes(encryptionKey[encryptionKey.length - 1]);
+			for (; intendedLetterCount < 30 && i < levelCode.length && mayContainIntendedWords; ++i) {
+				const c = decode(levelCode[+i]);
+				if (c == encryptionKey.length - 1) {
+					intendedWords.push([]);
+					continue;
+				}
+				if (intendedWords[intendedWords.length - 1].length >= 10) {
+					console.log("Intended word is too long. Assuming the url only has the letters.");
+					i = 0;
+					intendedWords.splice(0, intendedWords.length);
+					break;
+				}
+				intendedWords[intendedWords.length - 1].push(c);
+				intendedLetterCount += 1;
+			}
+			const a = +('A'.charCodeAt(0));
+			for (; letters.length < 30 && i < levelCode.length; ++i) {
+				const charCode = decode(levelCode[+i]);
+				let str = undefined;
+				if (charCode == 26)
+					str = 'Å';
+				else if (charCode == 27)
+					str = 'Ä';
+				else if (charCode == 28)
+					str = 'Ö';
+				else
+					str = String.fromCharCode(a + charCode)
+				letters.push(str);
+			}
+		}
+
+		const letters = [];
+		const originalFoundWords = [];
+		{
+			let givenLevelCode = "ykjuD1gYrCO8Wh9rqlwKHFza4rd2x0X7p744FKDzapKK7K7jpKFjkpYz70Fpj1j";
+			const url = window.location.href.split('?');
+			if (url.length == 2) {
+				givenLevelCode = url[1];
+			}
+			decodeLevelCode(givenLevelCode, letters, originalFoundWords);
+
+			let intendedLetterCount = 0;
+			originalFoundWords.forEach(arr => intendedLetterCount += arr.length);
+			if (intendedLetterCount == 0) {
+				const msg = "Mallivastaus puuttuu. Kaivos voi olla mahdoton.";
+				console.log(msg);
+				document.getElementById('virhe').textContent = msg;
+			} else if (intendedLetterCount != letters.length) {
+				const msg = "Mallivastauksessa väärä määrä kirjaimia: " + intendedLetterCount + ", kun pitäsi olla " + letters.length + ".";
+				console.log(msg);
+				document.getElementById('virhe').textContent = msg;
+			}
+		}
+
+		function makeCells(resultCells, parentElement, interactive) {
+			letters.forEach((letter, index) => {
+				const cell = document.createElement('div');
+				cell.textContent = letter;
+				cell.classList.add('cell');
+				cell.dataset.index = index;
+				cell.dataset.letter = letter;
+				parentElement.appendChild(cell);
+				resultCells.push(cell);
+				if (!interactive)
+					return;
+
+				cell.addEventListener('click', () => {
+					const selectedIndex = selectedCells.indexOf(cell);
+					if (selectedIndex > -1 && selectedIndex + 1 == selectedCells.length) {
+						toggleSelection(cell);
+						return;
+					}
+					if (selectedIndex > -1) {
+						//clearSelected()
+						return;
+					}
+
+					for (i in foundWords) {
+						if (foundWords[i].includes(cell)) {
+							removeWord(foundWords[i]);
+							return;
+						}
+					}
+
+					for (word in foundWords)
+					{
+						if (!word.includes(cell)) continue;
+						removeWord(word);
+						return;
+					}
+
+					if (isAdjacent(cell)) {
+						toggleSelection(cell);
+					}
+				});
+			});
+		}
+
+		const allCells = [];
+		const selectedCells = [];
+		const foundWords = [];
+		const wordListing = [];
+		const connectors = [];
+
+		makeCells(allCells, document.getElementById('board'), true);
+
+		originalFoundWords.forEach(wi => {
+			const w = [];
+			let str = "";
+			let prevCell = null;
+			wi.forEach(i => {
+				const cell = allCells[i];
+				w.push(cell);
+				cell.classList.add("used");
+				if (prevCell) {
+					connect(prevCell, cell, "used");
+				}
+				str += cell.dataset.letter;
+				prevCell = cell;
+			});
+
+			if (!validWords.includes(str))
+				console.log('invalid word ' + str);
+			foundWords.push(w);
+			addWord(str, wi[0]);
+		});
+
+		function disconnect(cell1, cell2) {
+				if (!cell1 || !cell2) return;
+
+				const rect1 = cell1.dataset.index < cell2.dataset.index ? cell1 : cell2;
+				const rect2 = cell1.dataset.index < cell2.dataset.index ? cell2 : cell1;
+				const key = rect1.dataset.index + "-" + rect2.dataset.index;
+				//console.log(`trying to disconnect(${cell1.dataset.index}, ${cell2.dataset.index}) -> ${key} & ${rect1.dataset.index}`);
+				const line = connectors.find(l => l.dataset.key === key);
+				//console.log(`found ${line}`);
+				if (line) {
+					let index = connectors.indexOf(line);
+					//console.log(line, index, connectors);
+					//console.log(`disconnect(${cell1.dataset.index}, ${cell2.dataset.index}) -> ${key} & ${rect1.dataset.index}`);
+					connectors.splice(index, 1);
+					line.remove();
+				}
+		};
+
+		function connect(cell1, cell2, style) {
+			connectImpl(document.getElementById('board-container'), cell1, cell2, style);
+		}
+
+		function connectImpl(containter, cell1, cell2, style) {
+				disconnect(cell1, cell2);
+				const line = document.createElement('div');
+				containter.appendChild(line);
+				line.classList.add('line');
+				line.classList.add(style);
+				const rect1 = cell1.dataset.index < cell2.dataset.index ? cell1 : cell2;
+				const rect2 = cell1.dataset.index < cell2.dataset.index ? cell2 : cell1;
+				const key = rect1.dataset.index + "-" + rect2.dataset.index;
+				line.dataset.key = key;
+
+				const x1 = rect1.offsetLeft + rect1.offsetWidth * 0.5;
+				const y1 = rect1.offsetTop + rect1.offsetHeight * 0.5;
+				const x2 = rect2.offsetLeft + rect2.offsetWidth * 0.5;
+				const y2 = rect2.offsetTop + rect2.offsetHeight * 0.5;
+				const diagonality = (x1 != x2 && y1 != y2) ? Math.pow(2, 0.5) : 1.0;
+				const w = 45 * diagonality;
+				const h = 10;
+				const ox = x1 == x2 ? 0 : x1 < x2 ? 0 : -0;
+				const oy = y1 == y2 ? 0 : y1 < y2 ? 0 : -0;
+				const cx = (x1 + x2) * 0.5;
+				const cy = (y1 + y2) * 0.5;
+				const angle = Math.atan2(y2 - y1, x2 - x1);
+				line.style.position = 'absolute';
+				line.style.top = `${cy + oy - h*0.5}px`;
+				line.style.left = `${cx + ox - w*0.5}px`;
+				line.style.transform = `rotate(${angle}rad)`;
+				line.style.width = `${w}px`;
+				line.style.height = `${h}px`;
+				line.style.zIndex = -1;
+				//console.log(rect1, rect2, line)
+				connectors.push(line);
+				return line;
+		};
+
+		function generateLevelCode() {
+			const letters =	[];
+			const words = [];
+			for (let i = 0; i < allCells.length; ++i) {
+				letters.push(allCells[i].dataset.letter);
+			}
+			console.log(letters);
+			foundWords.forEach(word => {
+				const result = [];
+				word.forEach(l => result.push(l.dataset.index));
+				words.push(result);
+			});
+			const generatedLevelCode = encodeLevelCode(letters, words);
+			return generatedLevelCode;
+		}
+
+		function countSelectedLetters() {
+			let foundCount = 0;
+			foundWords.forEach(word => foundCount += word.length);
+			return foundCount;
+		}
+
+		const copyButton = document.getElementById('copyToClipboard');
+		copyButton.addEventListener('click', ()=>{
+			if (countSelectedLetters() != 30) {
+				clearSelected();
+				return;
+			}
+
+			const shareableUrl = "http://localhost/sanakaivos.html?" + generateLevelCode();
+			let msg = shareableUrl;
+			console.log("Copied to clipboard: " + msg);
+			navigator.clipboard.writeText(msg);
+			copyButton.textContent = "Kopioitu!";
+		});
+		updateCurrentWord();
+
+		function removeWord(word) {
+			word.forEach((cell) => { cell.classList.remove('used'); });
+			for (i in word)
+			{
+				if (+i + 1 < word.length)
+					disconnect(word[i], word[+i + 1]);
+			}
+
+			const index = foundWords.indexOf(word);
+			foundWords.splice(index, 1);
+			updateCurrentWord();
+		}
+
+		function addWord(word, firstCellIndex) {
+			const wlist = document.createElement('div');
+			wordListing.push(wlist);
+			wlist.textContent = word;
+			wlist.dataset.owner = firstCellIndex;
+			wlist.classList.add("loydetty_sana");
+			document.getElementById('loydetyt_sanat').appendChild(wlist);
+			wlist.addEventListener('click', () => {
+				let wasFound = false;
+				for (let i = foundWords.length; i-- > 0; ) {
+					if (foundWords[i][0].dataset.index == wlist.dataset.owner) {
+						removeWord(foundWords[i]);
+						wasFound = true;
+						console.log("found");
+					}
+				}
+				if (wasFound) return;
+
+				const i = wordListing.indexOf(wlist);
+				wordListing.splice(i, 1)[0].remove();
+			});
+		}
+
+		function clearSelected() {
+			selectedCells.forEach((cell) => {
+				//console.log(`clearing: ${cell.dataset.index}`);
+				cell.classList.remove('selected');
+			});
+			//console.log(selectedCells.length, selectedCells);
+			for (i in selectedCells)
+			{
+				//console.log(i, selectedCells);
+				if (+i + 1 < selectedCells.length)
+					disconnect(selectedCells[i], selectedCells[+i + 1]);
+			}
+			selectedCells.length = 0;
+		}
+
+		function popSelection() {
+			console.log("pop!")
+			const index = selectedCells.length - 1;
+			if (index <= -1)
+			{
+				console.log("Trying to unselect non-selected cell.");
+				return;
+			}
+
+			const cell = selectedCells.splice(index, 1)[0];
+			cell.classList.remove('selected');
+			if (index > 0)
+				disconnect(selectedCells[index - 1], cell);
+		}
+
+		function toggleSelection(cell) {
+			const index = selectedCells.indexOf(cell);
+			if (index > -1 && selectedCells.length == index + 1) {
+				if (selectedCells.length == 1) { clearSelected(); }
+				else { popSelection(); }
+				updateCurrentWord();
+				return;
+			} else {
+				const nextLetter = getNextLetter();
+				if (nextLetter === undefined) {
+					console.log("No more letters to place.");
+					currentListing = -1;
+					return;
+				}
+				if (selectedCells.length > 0)
+				{
+					connect(selectedCells[selectedCells.length - 1], cell, "selected");
+				}
+				selectedCells.push(cell);
+				cell.classList.toggle('selected');
+				cell.dataset.letter = nextLetter;
+				cell.textContent = nextLetter;
+
+				let wlist = getCurrentWordListing();
+				if (wlist.textContent.length == selectedCells.length) {
+					currentListing = -1;
+					console.log("Done!");
+					const newWord = [];
+					selectedCells.forEach((cell) => {
+						newWord.push(cell);
+						cell.classList.add("used");
+					});
+					foundWords.push(newWord);
+					console.log(foundWords);
+					clearSelected();
+					for (i in newWord) {
+						if (+i + 1 < newWord.length)
+							connect(newWord[i], newWord[+i + 1], "used");
+					}
+					wlist.dataset.owner = newWord[0].dataset.index;
+					updateCurrentWord();
+				}
+			}
+		}
+
+		function updateCurrentError() {
+			const sana = document.getElementById('sana');
+			sana.textContent = "";
+		}
+
+		let currentListing = -1;
+		function getCurrentWordListing() {
+			if (currentListing >= 0 && currentListing < wordListing.length) {
+				return wordListing[currentListing];
+			}
+			return undefined;
+		}
+		function getNextLetter() {
+			console.log("000 - " + currentListing);
+			const unusedListings = wordListing.filter(wl => !foundWords.find(w => w[0].dataset.index === wl.dataset.owner));
+			console.log(unusedListings);
+			if (currentListing >= 0 && currentListing < wordListing.length) {
+				if (unusedListings.includes(wordListing[currentListing])) {
+					if (wordListing[currentListing].textContent.length > selectedCells.length) {
+						console.log(wordListing[currentListing]);
+						console.log("aaa - " + currentListing);
+						return wordListing[currentListing].textContent[selectedCells.length];
+					}
+				}
+				currentListing = -1;
+			}
+			console.log("bbb - " + currentListing);
+			if (unusedListings.length > 0) {
+				if (unusedListings[0].textContent.length > selectedCells.length) {
+					currentListing = wordListing.indexOf(unusedListings[0]);
+					console.log("ddd - " + currentListing);
+					return unusedListings[0].textContent[selectedCells.length];
+				}
+			}
+			console.log("ccc - " + currentListing);
+			currentListing = -1;
+			return undefined;
+		}
+
+		function updateCurrentWord() {
+			const sana = document.getElementById('sana');
+			sana.textContent = "";
+
+			const unusedListings = wordListing.filter(wl => !foundWords.find(w => w[0].dataset.index === wl.dataset.owner));
+			for (let i = 0; i < wordListing.length; i++) {
+				const wlist = wordListing[i];
+				wlist.classList.remove("used");
+				wlist.classList.remove("next");
+				if (unusedListings.length > 0 && wlist === unusedListings[0])
+					wlist.classList.add("next");
+				else if (!unusedListings.includes(wlist))
+					wlist.classList.add("used");
+			}
+
+			selectedCells.forEach(cell => {
+				sana.textContent += cell.dataset.letter;
+			});
+			document.getElementById('virhe').textContent = "";
+			
+			if (countSelectedLetters() == 30)
+				copyButton.textContent = "Kopioi-linkki";
+			else
+				copyButton.textContent = "Peru";
+			//koodi.textContent = generateLevelCode();
+		}
+
+		function isAdjacent(cell) {
+			const index = parseInt(cell.dataset.index);
+			const lastIndex = selectedCells.length > 0 ? parseInt(selectedCells[selectedCells.length - 1].dataset.index) : -1;
+			if (lastIndex === -1) return true;
+			const w = 5;
+			const h = 6;
+			const rowDiff = Math.abs(Math.floor(index / w) - Math.floor(lastIndex / w));
+			const colDiff = Math.abs(index % w - lastIndex % w);
+			return rowDiff <= 1 && colDiff <= 1;
+		}
+
+	</script>
+</body>
+</html>
