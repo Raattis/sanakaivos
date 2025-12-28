@@ -121,29 +121,29 @@
 			}
 
 
-			const domain = window.location.href.split('/kaivoseditor.html')[0];
-			const shareableUrl = domain + "/sanakaivos.html?" + generateLevelCode();
+			const domain = window.location.href.split('/editori.html')[0];
+			const shareableUrl = domain + "/index.html?" + generateLevelCode();
 			let msg = "Tein uuden sanakaivoksen! Pääsetkö sen läpi?\n" + shareableUrl;
 			//console.log("Copied to clipboard: " + msg);
 			navigator.clipboard.writeText(msg);
 			copyButton.textContent = "Kopioitu!";
 		});
 
-		const encryptionKey = "jy2d7ukxpX1Dz04YgFaK8ChHwOW9qlr";
+		const obfuscationKey = "jy2d7ukxpX1Dz04YgFaK8ChHwOW9qlr";
 		function encodeLevelCode(letters, intendedWords) {
 			function encode(c) {
 				c = +c;
-				if (c < 0 || encryptionKey.length <= c) {
+				if (c < 0 || obfuscationKey.length <= c) {
 					const msg = "ERROR: Encode failed = " + c
 					console.log(msg);
 					document.getElementById('virhe').textContent = msg;
 				}
-				return encryptionKey[c];
+				return obfuscationKey[c];
 			}
 			let levelCode = "";
 			for (let i = 0; i < intendedWords.length; i += 1) {
 				if (i != 0)
-					levelCode += encode(encryptionKey.length - 1);
+					levelCode += encode(obfuscationKey.length - 1);
 				for (let j = 0; j < intendedWords[i].length; j += 1) {
 					levelCode += encode(intendedWords[i][j]);
 				}
@@ -167,12 +167,12 @@
 
 		function decodeLevelCode(levelCode, letters, intendedWords) {
 			function decode(c) {
-				if (!encryptionKey.includes(c)) {
+				if (!obfuscationKey.includes(c)) {
 					const msg = "ERROR: Decode failed = " + c
 					console.log(msg);
 					document.getElementById('virhe').textContent = msg;
 				}
-				return encryptionKey.indexOf(c);
+				return obfuscationKey.indexOf(c);
 			}
 
 			letters.splice(0, letters.length);
@@ -180,10 +180,10 @@
 			intendedWords.push([]);
 			let intendedLetterCount = 0;
 			let i = 0;
-			const mayContainIntendedWords = levelCode.length >= 62 && levelCode.includes(encryptionKey[encryptionKey.length - 1]);
+			const mayContainIntendedWords = levelCode.length >= 62 && levelCode.includes(obfuscationKey[obfuscationKey.length - 1]);
 			for (; intendedLetterCount < 30 && i < levelCode.length && mayContainIntendedWords; ++i) {
 				const c = decode(levelCode[+i]);
-				if (c == encryptionKey.length - 1) {
+				if (c == obfuscationKey.length - 1) {
 					intendedWords.push([]);
 					continue;
 				}
