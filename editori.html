@@ -227,10 +227,11 @@
 
 			const sanatPrefix = 'sanat=';
 			if (givenLevelCode.startsWith(sanatPrefix)) {
+				givenLevelCode = givenLevelCode.replace("%C3%85","Å").replace("%C3%84","Ä").replace("%C3%96","Ö");
 				let args = givenLevelCode.substring(sanatPrefix.length).split('&');
 				let wordsStr = args[0];
 				wordsStr.split(',').filter(w => w.length >= 3).forEach(w => originalWordList.push(w));
-				console.log(originalWordList);
+				//console.log(originalWordList);
 
 				const kirjaimetPrefix = 'kirjaimet=';
 				if (args.length > 1 && args[1].startsWith(kirjaimetPrefix)) {
@@ -239,7 +240,7 @@
 				while (letters.length < 30) {
 					if (wordsStr.length > 0) {
 						const c = wordsStr[0].toUpperCase();
-						console.log(c)
+						//console.log(c)
 						wordsStr = wordsStr.substring(1);
 						if (c !== ',')
 							letters.push(c)
@@ -351,8 +352,6 @@
 		makeCells(allCells, document.getElementById('board'), true);
 
 		originalWordList.forEach(str => {
-			if (!validWords.includes(str))
-				console.log('invalid word ' + str);
 			addWord(str, -1);
 		});
 
@@ -473,7 +472,7 @@
 			result += "sanat=" + sanat.join(',');
 			result += "&kirjaimet=" + letters.join('');
 			result += "&paikat=" + paikat.join(',');
-			console.log(result);
+			//console.log(result);
 			return result;
 		}
 
@@ -482,8 +481,6 @@
 			foundWords.forEach(word => foundCount += word.length);
 			return foundCount;
 		}
-
-		updateCurrentWord();
 
 		function removeWord(word) {
 			word.forEach((cell) => { cell.classList.remove('used'); });
@@ -494,12 +491,22 @@
 			}
 
 			const index = foundWords.indexOf(word);
+			for (const wl of wordListing.filter(w=>+w.dataset.owner === foundWords[index][0].dataset.index)) {
+				//console.log("removing owner from:", wl);
+				wl.dataset.owner = -1;
+			}
 			foundWords.splice(index, 1);
 			updateCurrentWord();
 			displayWords();
 		}
 
 		function addWord(word, firstCellIndex) {
+			if (!validWords.includes(word)) {
+				console.log('invalid word ' + word);
+				document.getElementById('virhe').textContent = `${word} ei ole oikea sana`;
+				updateCurrentError();
+			}
+
 			const wlist = document.createElement('div');
 			wordListing.push(wlist);
 			wlist.textContent = word;
@@ -521,7 +528,8 @@
 				wordListing.splice(i, 1)[0].remove();
 				updateCurrentWord();
 			});
-			updateCurrentWord();
+			if (validWords.includes(word))
+				updateCurrentWord();
 			displayWords();
 		}
 
@@ -578,7 +586,7 @@
 				cell.dataset.letter = nextLetter;
 				cell.textContent = nextLetter;
 				letters[+cell.dataset.index] = nextLetter;
-				console.log(letters.join(''))
+				//console.log(letters.join(''))
 
 				let wlist = getCurrentWordListing();
 				if (wlist.textContent.length == selectedCells.length) {
@@ -627,7 +635,6 @@
 			if (unusedListings.length > 0) {
 				if (unusedListings[0].textContent.length > selectedCells.length) {
 					currentListing = wordListing.indexOf(unusedListings[0]);
-					//console.log("ddd - " + currentListing);
 					return unusedListings[0].textContent[selectedCells.length];
 				}
 			}
