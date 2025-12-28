@@ -71,7 +71,7 @@
 
 			const query = searchInput.value.toUpperCase();
 			const spentLetters = countTotalLetters();
-			const maxLength = spentLetters < 30 ? 30 - spentLetters : 10;
+			const maxLength = spentLetters <= 27 ? 30 - spentLetters : 10;
 			const filteredWords = validWords.filter(word => word.includes(query) && word.length <= maxLength);
 			if (enableShuffle) {
 				scrollAmount = 0;
@@ -213,25 +213,78 @@
 		}
 
 		const letters = [];
+		let originalUrl = "";
 		const originalFoundWords = [];
+		const originalWordList = [];
 		{
 			let givenLevelCode = "ykjuD1gYrCO8Wh9rqlwKHFza4rd2x0X7p744FKDzapKK7K7jpKFjkpYz70Fpj1j";
 			const url = window.location.href.split('?');
+			originalUrl = url[0];
 			if (url.length == 2) {
 				givenLevelCode = url[1];
 			}
-			decodeLevelCode(givenLevelCode, letters, originalFoundWords);
 
-			let intendedLetterCount = 0;
-			originalFoundWords.forEach(arr => intendedLetterCount += arr.length);
-			if (intendedLetterCount == 0) {
-				const msg = "Mallivastaus puuttuu. Kaivos voi olla mahdoton.";
-				console.log(msg);
-				document.getElementById('virhe').textContent = msg;
-			} else if (intendedLetterCount != letters.length) {
-				const msg = "Mallivastauksessa väärä määrä kirjaimia: " + intendedLetterCount + ", kun pitäsi olla " + letters.length + ".";
-				console.log(msg);
-				document.getElementById('virhe').textContent = msg;
+			const sanatPrefix = 'sanat=';
+			if (givenLevelCode.startsWith(sanatPrefix)) {
+				let args = givenLevelCode.substring(sanatPrefix.length).split('&');
+				let wordsStr = args[0];
+				wordsStr.split(',').filter(w => w.length >= 3).forEach(w => originalWordList.push(w));
+				console.log(originalWordList);
+
+				const kirjaimetPrefix = 'kirjaimet=';
+				if (args.length > 1 && args[1].startsWith(kirjaimetPrefix)) {
+					args[1].substring(kirjaimetPrefix.length).split('').forEach(c => letters.push(c));
+				}
+				while (letters.length < 30) {
+					if (wordsStr.length > 0) {
+						const c = wordsStr[0].toUpperCase();
+						console.log(c)
+						wordsStr = wordsStr.substring(1);
+						if (c !== ',')
+							letters.push(c)
+					} else {
+						letters.push('A')
+					}
+				}
+
+				const paikatPrefix = 'paikat=';
+				if (args.length > 2 && args[2].startsWith(paikatPrefix)) {
+					const paikat = [];
+					args[2].substring(paikatPrefix.length).split(',').forEach(p => paikat.push(+p));
+					let i = 0;
+					let wl_index = 0;
+					while (wl_index < originalWordList.length) {
+						const w = originalWordList[wl_index];
+						wl_index++;
+						if (i >= paikat.length)
+							break;
+						const ow = [];
+						for (const _ of w) {
+							if (i >= paikat.length)
+								break;
+							ow.push(paikat[i]);
+							i++;
+						}
+						if (ow.length > 0 && ow[0] != -1) {
+							wl_index--;
+							originalWordList.splice(wl_index, 1);
+							originalFoundWords.push(ow);
+						}
+					}
+				}
+			} else {
+				decodeLevelCode(givenLevelCode, letters, originalFoundWords);
+				let intendedLetterCount = 0;
+				originalFoundWords.forEach(arr => intendedLetterCount += arr.length);
+				if (intendedLetterCount == 0) {
+					const msg = "Mallivastaus puuttuu. Kaivos voi olla mahdoton.";
+					console.log(msg);
+					document.getElementById('virhe').textContent = msg;
+				} else if (intendedLetterCount != letters.length) {
+					const msg = "Mallivastauksessa väärä määrä kirjaimia: " + intendedLetterCount + ", kun pitäsi olla " + letters.length + ".";
+					console.log(msg);
+					document.getElementById('virhe').textContent = msg;
+				}
 			}
 		}
 
@@ -295,6 +348,12 @@
 
 		displayWords();
 		makeCells(allCells, document.getElementById('board'), true);
+
+		originalWordList.forEach(str => {
+			if (!validWords.includes(str))
+				console.log('invalid word ' + str);
+			addWord(str, -1);
+		});
 
 		originalFoundWords.forEach(wi => {
 			const w = [];
@@ -387,6 +446,36 @@
 			});
 			const generatedLevelCode = encodeLevelCode(letters, words);
 			return generatedLevelCode;
+		}
+
+		function generateWipLevelCode() {
+			const sanat = [];
+			const paikat = [];
+			for (const wl of wordListing) {
+				sanat.push(wl.textContent);
+				if (wl.dataset.owner != -1) {
+					const fw = foundWords.find(cells => cells[0].dataset.index == wl.dataset.owner);
+					if (fw) {
+						fw.forEach(cell => paikat.push(+cell.dataset.index));
+						continue;
+					}
+				}
+				for (let i = 0; i < wl.textContent.length; ++i) {
+					paikat.push(-1);
+				}
+			}
+			for (const fw of foundWords) {
+			}
+
+			if (sanat.length === 0)
+				return "sanat=";
+
+			let result = "";
+			result += "sanat=" + sanat.join(',');
+			result += "&kirjaimet=" + letters.join('');
+			result += "&paikat=" + paikat.join(',');
+			console.log(result);
+			return result;
 		}
 
 		function countSelectedLetters() {
@@ -568,11 +657,12 @@
 			}
 			document.getElementById('virhe').textContent = "";
 			
-			if (countSelectedLetters() == 30)
+			if (countSelectedLetters() == 30) {
 				copyButton.textContent = "Kopioi-linkki";
-			else
+			} else {
 				copyButton.textContent = "Peru";
-			//koodi.textContent = generateLevelCode();
+			}
+			history.replaceState(null, "", originalUrl + "?" + generateWipLevelCode());
 		}
 
 		function countTotalLetters() {
