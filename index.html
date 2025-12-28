@@ -324,7 +324,10 @@
 
 		makeButton('luovuta', () => {
 			gameOver();
-			document.getElementById('tulos').textContent = 'Luovutit ajassa ' + getResultTime();
+			if (foundWords.length != 1)
+				document.getElementById('tulos').textContent = 'Löysit ' + foundWords.length + ' sanaa ajassa ' + getResultTime();
+			else
+				document.getElementById('tulos').textContent = 'Löysit ' + foundWords.length + ' sanan ajassa ' + getResultTime();
 		}).classList.add('luovuta');
 
 		let revealedClues = 0;
@@ -450,7 +453,7 @@
 		function victory() {
 			youWon = true;
 			gameOver();
-			document.getElementById('tulos').textContent = 'Voitit ajassa ' + getResultTime();
+			document.getElementById('tulos').textContent = 'Löysit kaikki sanat ajassa ' + getResultTime();
 		}
 
 		function clearSelected() {
