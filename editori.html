@@ -117,6 +117,7 @@
 		copyButton.addEventListener('click', ()=>{
 			if (countSelectedLetters() != 30) {
 				clearSelected();
+				updateCurrentWord();
 				return;
 			}
 
@@ -433,18 +434,18 @@
 		};
 
 		function generateLevelCode() {
-			const letters =	[];
+			const tempLetters =	[];
 			const words = [];
 			for (let i = 0; i < allCells.length; ++i) {
-				letters.push(allCells[i].dataset.letter);
+				tempLetters.push(allCells[i].dataset.letter);
 			}
-			//console.log(letters);
+			//console.log(tempLetters);
 			foundWords.forEach(word => {
 				const result = [];
 				word.forEach(l => result.push(l.dataset.index));
 				words.push(result);
 			});
-			const generatedLevelCode = encodeLevelCode(letters, words);
+			const generatedLevelCode = encodeLevelCode(tempLetters, words);
 			return generatedLevelCode;
 		}
 
@@ -454,7 +455,7 @@
 			for (const wl of wordListing) {
 				sanat.push(wl.textContent);
 				if (wl.dataset.owner != -1) {
-					const fw = foundWords.find(cells => cells[0].dataset.index == wl.dataset.owner);
+					const fw = foundWords.find(w => w[0].dataset.index === wl.dataset.owner);
 					if (fw) {
 						fw.forEach(cell => paikat.push(+cell.dataset.index));
 						continue;
@@ -463,8 +464,6 @@
 				for (let i = 0; i < wl.textContent.length; ++i) {
 					paikat.push(-1);
 				}
-			}
-			for (const fw of foundWords) {
 			}
 
 			if (sanat.length === 0)
@@ -578,6 +577,8 @@
 				cell.classList.toggle('selected');
 				cell.dataset.letter = nextLetter;
 				cell.textContent = nextLetter;
+				letters[+cell.dataset.index] = nextLetter;
+				console.log(letters.join(''))
 
 				let wlist = getCurrentWordListing();
 				if (wlist.textContent.length == selectedCells.length) {
@@ -657,10 +658,14 @@
 			}
 			document.getElementById('virhe').textContent = "";
 			
+			copyButton.classList.remove('disabled-button')
 			if (countSelectedLetters() == 30) {
 				copyButton.textContent = "Kopioi-linkki";
+			} else if (selectedCells.length > 0) {
+				copyButton.textContent = "Peru";
 			} else {
 				copyButton.textContent = "Peru";
+				copyButton.classList.add('disabled-button')
 			}
 			history.replaceState(null, "", originalUrl + "?" + generateWipLevelCode());
 		}
