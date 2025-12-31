@@ -243,18 +243,19 @@
 				const x2 = rect2.offsetLeft + rect2.offsetWidth * 0.5;
 				const y2 = rect2.offsetTop + rect2.offsetHeight * 0.5;
 				const diagonality = (x1 != x2 && y1 != y2) ? Math.pow(2, 0.5) : 1.0;
-				const w = 45 * diagonality;
-				const h = 10;
-				const ox = x1 == x2 ? 0 : x1 < x2 ? 0 : -0;
-				const oy = y1 == y2 ? 0 : y1 < y2 ? 0 : -0;
+				const w = containter.offsetHeight * 0.2;
+				const h = containter.offsetHeight * 0.1;
 				const cx = (x1 + x2) * 0.5;
 				const cy = (y1 + y2) * 0.5;
 				const angle = Math.atan2(y2 - y1, x2 - x1);
 				line.style.position = 'absolute';
-				line.style.top = `${cy + oy - h*0.5}px`;
-				line.style.left = `${cx + ox - w*0.5}px`;
+				const vx = (cx - w*0.5) / containter.offsetHeight * 100;
+				const vy = (cy - h*0.5) / containter.offsetHeight * 100;
+				console.log(vx, vy);
+				line.style.top = `${vy}%`;
+				line.style.left = `${vx}%`;
 				line.style.transform = `rotate(${angle}rad)`;
-				line.style.width = `${w}px`;
+				line.style.width = `${w}%`;
 				line.style.zIndex = -1;
 				//console.log(rect1, rect2, line)
 				connectors.push(line);

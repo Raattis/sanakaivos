@@ -11,19 +11,20 @@ body {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	font-size: max(10px, min(2vh, 4vw));
+	margin-top: max(10px, 25vh - 25vw);
 }
 .page-center {
 	margin: 0;
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
+	margin: auto;
 }
 .column {
 	display: flex;
 	flex-direction: column;
 	margin: auto;
-	padding-left: 20px;
-	padding-right: 20px;
 }
 h1 {
 	color: #f4f4f4;
@@ -55,19 +56,19 @@ h1 {
 	row-gap: 2px;
 	column-gap: 4px;
 	margin-bottom: 10px;
+	margin: auto;
 	height: 70px;
-	width: 250px;
+	max-width: max(200px, min(69vw, 80vw));
 }
 .loydetty_sana {
-	height: 28px;
+	padding: min(1vw, 1vh) min(1vw, 1vh);
+	height: max(12px, 2.5vh);
+	border-radius: min(2vw, 2vh) min(2vw, 2vh);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background-color: #4c4c4c;
-	border: 2px solid #555555;
-	border-radius: 10px;
-	padding-left: 5px;
-	padding-right: 5px;
+	border: 0.2vh solid #555555;
 }
 .loydetty_sana.next {
 	background-color: #4c4cec;
@@ -82,15 +83,21 @@ h1 {
 	grid-template-columns: repeat(5, 1fr);
 	margin-bottom: 20px;
 }
+#board-container {
+	position: relative;
+}
 #malli {
 	display: grid;
 	grid-template-columns: repeat(5, 1fr);
 	margin-bottom: 20px;
 	margin-top: 50px;
 }
+#malli-container {
+	position: relative;
+}
 .cell-wrapper {
-	width: min(60px, 20vw);
-	height: min(60px, 20vw);
+	width: max(40px, min(8vh, 15vw));
+	height: max(40px, min(8vh, 15vw));
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -102,7 +109,7 @@ h1 {
 .cell {
 	width: 80%;
 	height: 80%;
-	font-size: 150%;
+	font-size: max(20px, min(3vh, 7vw));
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -153,7 +160,7 @@ h1 {
 }
 .line {
 	position: absolute;
-	height: 12px;
+	height: 2vh;
 }
 .line.selected {
 	background-color: #5c5cb8;
@@ -171,24 +178,24 @@ h1 {
 	background-color: #555555;
 }
 .button {
-	padding: 10px 15px;
+	padding: min(1vw, 1vh) min(1vw, 1vh);
 	background-color: #4b4b4b;
 	color: white;
 	border: none;
-	border-radius: 15px;
+	border-radius: min(2vw, 2vh) min(2vw, 2vh);
 	cursor: pointer;
 	transition: background-color 0.3s;
 	align-items: center;
 	justify-content: center;
 	display: flex;
+	margin:0;
+  font-size: max(15px, min(2.2vh, 4vw));
+  height: 100%;
 }
 .button.vihje {
-	border-radius: 20px;
-	margin-right: 10px;
-	margin-right: 10px;
-	padding-left: 0px;
-	padding-right: 0px;
-	width: 40px;
+	border-radius: 50%;
+  width: max(15px, 3vh);
+  height: max(15px, 3vh);
 }
 .button.yhdista {
 	background-color: #007bff;
@@ -203,7 +210,8 @@ h1 {
 	display: flex;
 	justify-content: center;
 	gap: 10px;
-	margin-bottom: 10px;
+	margin-bottom: max(15px, 3vh);
+  height: max(15px, 3vh);
 }
 .disabled {
 	pointer-events: none;
