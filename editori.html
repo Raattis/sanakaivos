@@ -7,10 +7,9 @@
 	<script src="sanat.js"></script>
 	<link rel="stylesheet" href="style.css">
 	<style>
-		// editor-only style
 		.filter-list-container {
-			width: 500px;
-			height: 100%;
+			width: 250px;
+			height: 480px;
 		}
 		input[type="text"] {
 			padding: 5px;
@@ -22,6 +21,9 @@
 		ul {
 			list-style-type: none;
 			padding: 0;
+			width: min(200px, 80vw);
+			margin: auto;
+			padding: 10px;
 		}
 		li {
 			padding: 0px;
@@ -34,12 +36,6 @@
 </head>
 <body>
 	<div class="page-center">
-		<div class="column filter-list-container">
-			<input type="text" id="searchInput" placeholder="Type to filter words..." />
-			<button id="shuffle" onclick="enableShuffle = !enableShuffle; displayWords()">Shuffle</button>
-			<ul id="filter-list"></ul>
-		</div>
-
 		<div class="column">
 			<h1>Kaivos editori</h1>
 			<div id="sana-container" style="position:relative;height:25px">
@@ -53,6 +49,16 @@
 			<div id="kopioi-tulos" class="button-container"><button id="copyToClipboard" class='button'>Kopioi linkki</button></div>
 			<!--div id="koodi" class="button"></div-->
 		</div>
+		<div class="column">
+			<div class="filter-list-container">
+				<div>
+					<input type="text" id="searchInput" placeholder="Type to filter words..." />
+					<button id="shuffle" onclick="enableShuffle = !enableShuffle; displayWords()">Shuffle</button>
+				</div>
+				<ul id="filter-list"></ul>
+			</div>
+		</div>
+
 	</div>
 	<script>
 		let enableShuffle = false;
@@ -106,10 +112,27 @@
 			}
 		}
 
-		document.addEventListener('wheel', (event) => {
+		const filterList = document.getElementById('filter-list');
+		filterList.addEventListener('wheel', (event) => {
 			scrollAmount += event.deltaY * 0.2;
 			displayWords();
 		});
+
+		{ // Touch scrolling
+			let startY = 0;
+			let initialScrollAmount = 0;
+			filterList.addEventListener('touchstart', (e) => {
+				startY = e.touches[0].clientY;
+				initialScrollAmount = scrollAmount;
+			});
+
+			filterList.addEventListener('touchmove', (e) => {
+				const y = e.touches[0].clientY;
+				scrollAmount = initialScrollAmount + Math.floor((startY - y) / 10);
+				displayWords();
+				e.preventDefault();
+			}, { passive: false });
+		}
 
 		searchInput.addEventListener('input', displayWords);
 
@@ -227,7 +250,7 @@
 
 			const sanatPrefix = 'sanat=';
 			if (givenLevelCode.startsWith(sanatPrefix)) {
-				givenLevelCode = givenLevelCode.replace("%C3%85","Å").replace("%C3%84","Ä").replace("%C3%96","Ö");
+				givenLevelCode = givenLevelCode.replaceAll("%C3%85","Å").replaceAll("%C3%84","Ä").replaceAll("%C3%96","Ö");
 				let args = givenLevelCode.substring(sanatPrefix.length).split('&');
 				let wordsStr = args[0];
 				wordsStr.split(',').filter(w => w.length >= 3).forEach(w => originalWordList.push(w));

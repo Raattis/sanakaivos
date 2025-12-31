@@ -15,13 +15,15 @@ body {
 .page-center {
 	margin: 0;
 	display: flex;
-	flex-direction: row;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 50px;
 }
 .column {
 	display: flex;
 	flex-direction: column;
+	margin: auto;
+	padding-left: 20px;
+	padding-right: 20px;
 }
 h1 {
 	color: #f4f4f4;
@@ -87,8 +89,8 @@ h1 {
 	margin-top: 50px;
 }
 .cell-wrapper {
-	width: 46px;
-	height: 45px;
+	width: min(60px, 20vw);
+	height: min(60px, 20vw);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -98,14 +100,15 @@ h1 {
 	cursor: default;
 }
 .cell {
-	width: 36px;
-	height: 34px;
+	width: 80%;
+	height: 80%;
+	font-size: 150%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	background-color: #333333;
 	border: 2px solid #262626;
-	border-radius: 18px;
+	border-radius: 50%;
 	transition: background-color 0.3s;
 	transition: border-color 0.3s;
 	user-select: none;
@@ -127,15 +130,15 @@ h1 {
 	background-color: #5c5c5c;
 	border-color: #555555;
 	color: #bbb;
-	width: 22px;
-	height: 22px;
+	width: 50%;
+	height: 50%;
 }
 .cell.intended-first, .cell.intended.selected {
 	background-color: #55f;
 	border-color: #44e;
 	color: #bbb;
-	width: 22px;
-	height: 22px;
+	width: 50%;
+	height: 50%;
 }
 .cell.vihje {
 	border-color: #eee !important;
